@@ -1,0 +1,12 @@
+{Error using fit>iFit (line 224)
+X, Y and WEIGHTS cannot have NaN values.
+
+Error in fit (line 108)
+[fitobj, goodness, output, convmsg] = iFit( xdatain, ydatain, fittypeobj, ...
+} 
+{Undefined function or variable 'fitEich_SP1'.
+} 
+{Error using save
+Variable 'HeatFluxSimulation' not found.
+} 
+ls: cannot access *.mat: No such file or directory

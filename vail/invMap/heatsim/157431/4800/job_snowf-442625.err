@@ -1,0 +1,20 @@
+{Index exceeds matrix dimensions.
+
+Error in bicubicHermite (line 78)
+F = [zg(ii1(1)) zg(ii1(2)) zg(ii1(3)) zg(ii1(4)); ...
+
+Error in calcBField_IncidenceAngle (line 130)
+[~, dpsidr, dpsidz] = bicubicHermite(rg, zg, psizr, r, z);
+} 
+{Error using fit>iFit (line 224)
+X, Y and WEIGHTS cannot have NaN values.
+
+Error in fit (line 108)
+[fitobj, goodness, output, convmsg] = iFit( xdatain, ydatain, fittypeobj, ...
+} 
+{Undefined function or variable 'fitEich_SP3'.
+} 
+{Error using save
+Variable 'HeatFluxSimulation' not found.
+} 
+ls: cannot access *.mat: No such file or directory

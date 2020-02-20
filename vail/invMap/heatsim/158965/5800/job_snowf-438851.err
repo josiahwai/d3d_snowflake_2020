@@ -1,0 +1,31 @@
+{Error using linspace (line 22)
+Inputs must be scalars.
+} 
+{Undefined function or variable 'psiDivSP3'.
+} 
+{Undefined function or variable 'psiDivSP3'.
+} 
+{Undefined function or variable 'psiDivSP3'.
+} 
+{Undefined function or variable 'psiDivSP3'.
+} 
+{Undefined function or variable 'psiDivSP3'.
+} 
+{Undefined function or variable 'sDiv_SP3'.
+} 
+{Undefined function or variable 'sDiv_SP3'.
+} 
+{Undefined function or variable 'qdiv_par_SP3'.
+} 
+{Undefined function or variable 'qdiv_perp_SP3'.
+} 
+{Undefined function or variable 'qdiv_perp_SP3'.
+} 
+{Undefined function or variable 'sDiv_SP3'.
+} 
+{Undefined function or variable 'rzDiv_SP3'.
+} 
+{Error using save
+Variable 'HeatFluxSimulation' not found.
+} 
+ls: cannot access *.mat: No such file or directory

@@ -1,0 +1,16 @@
+{Index exceeds matrix dimensions.
+
+Error in bicubicHermite (line 78)
+F = [zg(ii1(1)) zg(ii1(2)) zg(ii1(3)) zg(ii1(4)); ...
+
+Error in calcBField_IncidenceAngle (line 130)
+[~, dpsidr, dpsidz] = bicubicHermite(rg, zg, psizr, r, z);
+} 
+{Index exceeds matrix dimensions.
+
+Error in bicubicHermite (line 78)
+F = [zg(ii1(1)) zg(ii1(2)) zg(ii1(3)) zg(ii1(4)); ...
+
+Error in calcBField_IncidenceAngle (line 130)
+[~, dpsidr, dpsidz] = bicubicHermite(rg, zg, psizr, r, z);
+} 
