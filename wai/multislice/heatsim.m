@@ -1,7 +1,4 @@
-
-time = 4000;
-
-shot = 165288;
+function hs(eq)
 
 plotit = 1;
 saveit = 1;
