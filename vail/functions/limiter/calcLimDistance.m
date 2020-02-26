@@ -117,7 +117,7 @@ for ii = 1:(nlim-1)
             dr = r - rlim(ii);
             dz = z - zlim(ii);
             
-            s = s + sqrt(dr*dr + dz*dz);
+            s = s + sqrt(dr.*dr + dz.*dz);
             
         end
         

@@ -125,6 +125,7 @@ end
 
 % Compute the flux expansion at each strike point
 
+
 fExpP1 = calcFluxExpansion(spRZLP(1,1), spRZLP(1,2), psizr, rg, zg, psixPL, ...
     bzero, rzero);
 

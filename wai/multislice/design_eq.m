@@ -14,134 +14,31 @@
 shot = 165288;
 time_ms = 4000;  
 
-plotit = 1;
+plotit = 0;
 
 saveit = 0;
 
 simulate_heat = 1;
 
 
-% ------------------------------------------
-% OBTAIN SNOWFLAKE AND HEAT FLUX PARAMETERS
-% ------------------------------------------
+% ---------------------------
+% OBTAIN HEAT FLUX PARAMETERS
+% ---------------------------
 
 addpath(genpath('/u/jwai/d3d_snowflake_2020'));
 
-
 % Load tokamak definition
-load('/u/jwai/d3d_snowflake_2020/wai/hf_constrained_eq/mat_files/d3d_obj_mks_struct_129129.mat')
+tokdir = '/u/jwai/d3d_snowflake_2020/wai/hf_constrained_eq/mat_files/';
+tokdata = 'd3d_obj_mks_struct_129129.mat';
+load([tokdir tokdata]);
 
-
-% Compute total length of the limiter [m]
-limdata = tok_data_struct.limdata;
-sLimTot = calcLimDistance(limdata(2,1), limdata(1,1), limdata);
-
-% distance to limiter landmarks
-s45Deg1 = sLimTot - calcLimDistance(limdata(2,79), limdata(1,79), limdata);
-s45Deg2 = sLimTot - calcLimDistance(limdata(2,78), limdata(1,78), limdata);
-
-
-% Configure the plots
-if plotit    
-    figure(11)
-    plot(limdata(2,:), limdata(1,:), 'Color', [0.5 0.5 0.5], 'LineWidth', 3)
-    hold on
-    axis equal
-    axis([1.0 1.5 -1.4 -0.9])
-    xlabel('R [m]')
-    ylabel('Z [m]')
-    title([int2str(shot) ': ' int2str(time_ms) ' ms'])
-end
-    
 
 % Load the equilibrium
 eq_dir = strcat('/u/jwai/d3d_snowflake_2020/wai/multislice/eq_unconstrained/', int2str(shot), '/cake');
 eq = read_eq(shot, time_ms/1000, eq_dir);
 
-rg = eq.gdata.rg; 
-zg = eq.gdata.zg;
 
-rmaxis = eq.gdata.rmaxis;
-zmaxis = eq.gdata.zmaxis;
-
-bzero = eq.gdata.bzero;
-rzero = eq.gdata.rzero;
-
-psizr  = eq.gdata.psizr;
-psimag = eq.gdata.psimag;
-psibry = eq.gdata.psibry;
-
-[psizr, rg, zg] = regrid(rg, zg, psizr, 257, 257);
-
-
-% Locate the snowflake in the lower divertor
-
-rExp   =  1.1500;
-zExp   = -1.2500;
-rhoExp =  0.1000;
-
-[rxPL, zxPL, rxSL, zxSL, ~, ~, ~, ~, ~, ~] = ...
-    snowFinder(psizr, rExp, zExp, rhoExp, rg, zg);
-
-[rxPL, zxPL, psixPL] = isoflux_xpFinder(psizr, rxPL, zxPL, rg, zg);
-[rxSL, zxSL, psixSL] = isoflux_xpFinder(psizr, rxSL, zxSL, rg, zg);
-
-if abs(psixSL - psibry) < abs(psixPL - psibry)
-    swap(psixPL, psixSL);
-    swap(rxPL, rxSL);
-    swap(zxPL, zxSL);   
-end
-
-
-if plotit    
-    contour(rg, zg, psizr, [psixPL psixPL], 'b', 'LineWidth', 2)
-    contour(rg, zg, psizr, [psixSL psixSL], 'b', 'LineWidth', 1)
-    
-    plot(rxPL, zxPL, 'xb', 'Markersize', 12, 'LineWidth', 3)
-    plot(rxSL, zxSL, 'xb', 'Markersize', 12, 'LineWidth', 3)
-end
-
-% Find the strike points in the EFIT
-
-Rlessthan = limdata(2,:) <  2.0;
-Zlessthan = limdata(1,:) < -0.8;
- 
-boxL = Rlessthan & Zlessthan;
-limIdxL = find(boxL ~= 0);
-
-spRZLP = isoflux_spFinder(psizr, psixPL, rg, zg, limdata, limIdxL);
-spRZLS = isoflux_spFinder(psizr, psixSL, rg, zg, limdata, limIdxL);
-
-r_SP1_EFIT01 = spRZLP(1,1); 
-r_SP2_EFIT01 = spRZLP(2,1); 
-r_SP3_EFIT01 = spRZLS(4,1);
-
-z_SP1_EFIT01 = spRZLP(1,2); 
-z_SP2_EFIT01 = spRZLP(2,2); 
-z_SP3_EFIT01 = spRZLS(4,2);
-
-if plotit    
-    plot(r_SP1_EFIT01, z_SP1_EFIT01, 'ob', 'LineWidth', 2)
-    plot(r_SP2_EFIT01, z_SP2_EFIT01, 'ob', 'LineWidth', 2)
-    plot(r_SP3_EFIT01, z_SP3_EFIT01, 'ob', 'LineWidth', 2)
-end
-
- 
-fExp_SP1_EFIT01 = calcFluxExpansion(r_SP1_EFIT01, z_SP1_EFIT01, psizr, ...
-    rg, zg, psibry, bzero, rzero);
-fExp_SP2_EFIT01 = calcFluxExpansion(r_SP2_EFIT01, z_SP2_EFIT01, psizr, ...
-    rg, zg, psibry, bzero, rzero);
-fExp_SP3_EFIT01 = calcFluxExpansion(r_SP3_EFIT01, z_SP3_EFIT01, psizr, ...
-    rg, zg, psibry, bzero, rzero);
-
-s_SP1_EFIT01 = sLimTot - calcLimDistance(r_SP1_EFIT01, z_SP1_EFIT01, limdata); 
-s_SP2_EFIT01 = sLimTot - calcLimDistance(r_SP2_EFIT01, z_SP2_EFIT01, limdata);
-s_SP3_EFIT01 = sLimTot - calcLimDistance(r_SP3_EFIT01, z_SP3_EFIT01, limdata);
-
-
-%....................................
-% Load the heat flux data for the shot
-
+% Load heat flux
 qperp_dir  = ['/u/jwai/d3d_snowflake_2020/wai/multislice/ir_data/'];
 qperp_data = [num2str(shot) '/qperp_' num2str(shot) '.mat'];
 sFile = 's.mat';
@@ -153,11 +50,8 @@ load([qperp_dir sFile])
 qperp = qperp_all(k,:)';
 
 
-% Remove the gap
-
+% Remove the gap from s (distance along limiter)
 idxGap = find(s < 170);
-
-% Remove the gap
 
 gap1 = s(idxGap(end));
 gap2 = s(idxGap(end)+1);
@@ -166,8 +60,8 @@ dgap = gap2 - gap1;
 
 s(idxGap(end)+1:end) = s(idxGap(end)+1:end) - dgap;
 
-% Index data for each SP
 
+% Index data for each SP
 idx_SP1 = find(s < 115);
 idx_SP3 = find(s > 145);
 
@@ -181,21 +75,8 @@ s_SP1 = s(idx_SP1)';
 s_SP2 = s(idx_SP2)';
 s_SP3 = s(idx_SP3)';
 
-if plotit 
-    figure(22)
-    plot(s, qperp, '-ok', 'LineWidth', 1, 'MarkerSize', 2)
-    hold on
-    plot([50 210], [0 0], '--k')
-    
-    axis([80 180 -2 50])
-    xlabel('s [cm]')
-    ylabel('Heat Flux W/cm^2')
-    title([int2str(shot) ': ' int2str(time_ms) ' ms'])
-end
-
 
 % Determine magnitude and location of heat flux peak at each SP
-
 [qmax_SP1_temp, idx_SP1] = max(qperp_SP1);
 [qmax_SP2_temp, idx_SP2] = max(qperp_SP2);
 [qmax_SP3_temp, idx_SP3] = max(qperp_SP3);
@@ -204,8 +85,8 @@ sDiv_qmax_SP1_temp = s_SP1(idx_SP1);
 sDiv_qmax_SP2_temp = s_SP2(idx_SP2);
 sDiv_qmax_SP3_temp = s_SP3(idx_SP3);
 
-% Determine FWHM at each SP
 
+% Determine FWHM at each SP
 idx11 = find(qperp_SP1 >= qmax_SP1_temp/2, 1, 'first');
 idx21 = find(qperp_SP1 >= qmax_SP1_temp/2, 1, 'last');
 
@@ -251,7 +132,6 @@ end
 
 
 % predict x-point positions
-
 rxP_PRED = predict(rtree_rxP, [qmax_SP1_temp qmax_SP2_temp qmax_SP3_temp   ...
     sDiv_qmax_SP1_temp sDiv_qmax_SP2_temp sDiv_qmax_SP3_temp FWHM_SP1_temp ...
     FWHM_SP2_temp FWHM_SP3_temp]);
@@ -281,22 +161,19 @@ end
 
 clear spec config
 
-
 objs_dir  = '/u/pvail/d3d_snowflake_2019/invMap/';
 objs_name = 'd3d_obj_mks_struct_6565.mat';
 load([objs_dir objs_name])
 
-
-
 config = tok_data_struct;
 config.max_iterations = 2;
+spec.max_iterations = 5;
 
 config.plot_settings.SOL.n = 10;
 config.plot_settings.SOL.d = 1e-3;
 
 
 % save EFIT data
-
 init = eq;
 
 psizr_efit  = init.gdata.psibry;
@@ -309,14 +186,13 @@ ffprim_efit = init.gdata.ffprim;
 
 
 % Specify where the flux should equal the boundary flux
-
 spec.targets.rsep = init.gdata.rbbbs([1:60 82:89]);
 spec.targets.zsep = init.gdata.zbbbs([1:60 82:89]);
 spec.weights.sep  = ones(length(spec.targets.rsep),1);
 
+
 %..........................
 % Specify scalar quantities
-
 spec.targets.cpasma = init.gdata.cpasma;
 spec.weights.cpasma = 1;
 
@@ -348,6 +224,7 @@ config.fpol0 = init.gdata.fpol;
 
 %.................................
 % Specify coil circuit connections
+
 pp_dir = ['/u/jwai/d3d_snowflake_2020/wai/multislice/coil_data/' num2str(shot)];
 pp_data = ['/ppconfig_' num2str(shot) '.mat'];
 
@@ -357,6 +234,7 @@ spec.buscode = [0 0 ppconfig.bus_code];
 
 %........................
 % Load coil currents
+
 coil_dir = ['/u/jwai/d3d_snowflake_2020/wai/multislice/coil_data/' num2str(shot)];
 coil_data = '/coil_currents_smooth.mat';
 t_data = '/t.mat';
@@ -383,8 +261,7 @@ spec.weights.ic(iDivertor) = 1e-6;
 
 
 %.............
-% Run gsdesign
-% spec.fig = -1;
+% Obtain new equilibrium
 
 eq = gsdesign(spec, init.gdata, config);
 
@@ -411,8 +288,6 @@ load([jdir jdata])
 jpar0 = jtot;
 psin0 = psi_n;
 
-
-
 if plotit
     figure(33)
     hold on
@@ -426,8 +301,8 @@ end
 % --------------------
 
 if simulate_heat
-    heatsim(init)
-    heatsim(eq)
+    heatsim(init.gdata, shot, time_ms)
+    heatsim(eq, shot, time_ms)
 end
 
 
