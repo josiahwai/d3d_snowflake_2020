@@ -1,8 +1,0 @@
-Functionalized versions of Pat's code. 
-
-- obtain heat flux parameters
-- predict xpoint locations
-- design new equilibrium
-
-- measure edge current
-- simulate heat flux and compare
