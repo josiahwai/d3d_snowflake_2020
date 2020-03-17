@@ -4,16 +4,19 @@
 % ----------------------
 % USER / FUNCTION INPUTS
 % ----------------------
-ccc
 shot = 165288;
-time_ms = 4200;
+time_ms = 2900;
 
 plotit = 1;
-saveit = 1;
+saveit = 0;
 simulate_heat = 1;
     
 fprintf('\n\n\nshot: %d time: %d \n\n', shot, time_ms);
 
+
+% rx = [1.1391   1.122];
+% zx = [-1.1976   -1.2977];
+% scatter(rx,zx,'k','filled')
 
    
 % ---------------------------
@@ -180,54 +183,28 @@ spec.weights.sep  = ones(length(spec.targets.rsep),1) * 1e3;
 spec.targets.cpasma = init.gdata.cpasma;
 spec.weights.cpasma = 1;
 
-
-% ====================
-% X-POINT PREDICTIONS
-% vvvvvvvvvvvvvvvvvvvvs
-
 %...........................
 % Specify the null locations
 
 % spec.targets.rx = [rxP_PRED rxS_PRED];
 % spec.targets.zx = [zxP_PRED zxS_PRED];
+% spec.targets.rx = [rxPL 1.122];
+% spec.targets.zx = [zxPL -1.299];
 
-% psizr = eq.gdata.psizr;
-% psibry = eq.gdata.psibry;
-% rg = eq.gdata.rg; 
-% zg = eq.gdata.zg;
-% [rxPL, zxPL, rxSL, zxSL] = snowFinder(psizr,1.15,-1.25,0.1,rg,zg);
-% [rxPL, zxPL, psixPL] = isoflux_xpFinder(psizr, rxPL, zxPL, rg, zg);
-% [rxSL, zxSL, psixSL] = isoflux_xpFinder(psizr, rxSL, zxSL, rg, zg);
-% if abs(psixSL - psibry) < abs(psixPL - psibry)
-%     swap(psixPL, psixSL);
-%     swap(rxPL, rxSL);
-%     swap(zxPL, zxSL);   
-% end
-
-rxPL = 1.1179;
-zxPL = -1.1211;
-rxSL = 1.1968;
-zxSL = -1.2758;
-
-dr = -.01;
-dz = -.01;
-
-spec.targets.rx = [1.136  rxSL+dr];
-spec.targets.zx = [-1.121 zxSL+dz];
-
-% spec.targets.rx = [rxPL rxSL+dr];
-% spec.targets.zx = [zxPL zxSL+dz];
+rxPL = 1.1405;
+rxSL = 1.13;
+zxPL = -1.1994;
+zxSL = -1.2608;
+dr = -.01-.0074;
+dz = -.008-.006;
+spec.targets.rx = [rxPL+dr rxSL+dr];
+spec.targets.zx = [zxPL+dz zxSL+dz];
 
 spec.weights.x = [1 1] * 1e4;
 
 spec.targets.rbdef = rxP_PRED;
 spec.targets.zbdef = zxP_PRED;
 spec.weights.bdef  = 1;
-
-% ^^^^^^^^^^^^^^^^^^^^
-% X-POINT PREDICTIONS
-% ====================
-
 
 %.....................
 % Specify the profiles
@@ -329,12 +306,9 @@ end
 % SIMULATE HEAT FLUX
 % --------------------
 if simulate_heat
-    
     opts.plotit = plotit;
     opts.saveit = saveit;
     opts.root = root;
-    
-    save('eq','eq')
     
 %     try
 %         % heat sim for the unconstrained eq (from cake)
@@ -349,17 +323,17 @@ if simulate_heat
 %     end
     
     
-%     try
-%         % save the new constrained eq (based off cake)
-% %         opts.saveDir = [root 'outputs/hfsims/cake_constrained/' num2str(shot) '/'];
-%         opts.saveDir = '/u/jwai/d3d_snowflake_2020/current/debug/outputs/c/';
-%         if ~exist(opts.saveDir, 'dir')
-%             mkdir(opts.saveDir);
-%         end
-%         heatsim_batch2(eq, shot, time_ms, opts);
-%     catch
-%         fprintf('Warning: CAKE constrained heat sim did not run. %d %dms\n', shot, time_ms);        
-%     end
+    try
+        % save the new constrained eq (based off cake)
+%         opts.saveDir = [root 'outputs/hfsims/cake_constrained/' num2str(shot) '/'];
+        opts.saveDir = '/u/jwai/d3d_snowflake_2020/current/debug/outputs/c/';
+        if ~exist(opts.saveDir, 'dir')
+            mkdir(opts.saveDir);
+        end
+        heatsim_batch2(eq, shot, time_ms, opts);
+    catch
+        fprintf('Warning: CAKE constrained heat sim did not run. %d %dms\n', shot, time_ms);        
+    end
      
     
 %     try

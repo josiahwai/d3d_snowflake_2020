@@ -1,4 +1,13 @@
-function heatsim_batch2(eq, shot, time_ms, opts)
+% function heatsim_debug(eq, shot, time_ms, opts)
+
+% load('init');
+% eq = init.gdata;
+shot = 165288;
+time_ms = 2900;
+opts.plotit = 1;
+opts.saveit = 1;
+opts.root = '/u/jwai/d3d_snowflake_2020/current/';
+opts.saveDir = '/u/jwai/d3d_snowflake_2020/current/debug/outputs/u/';
 
 % ---------------------------------
 % ANALYZE THE SNOWFLAKE EQUILIBRIUM
@@ -492,6 +501,35 @@ end
 [sSPI, sSPX, sSPO] = deal(sDivI(iI), sDivX(iX), sDivO(iO));
 [spRI, spRX, spRO] = deal(rdivI(iI), rdivX(iX), rdivO(iO));
 [spZI, spZX, spZO] = deal(zdivI(iI), zdivX(iX), zdivO(iO));
+
+%==========
+% DEBBUGGG
+%==========
+[~,k0] = max(qdiv_perpO);
+s_qmax_sim = sDivO(k0);
+[psi0, psi_r, psi_z] = bicubicHermite(rg,zg,psizr,rdivO(k0),zdivO(k0));
+r0 = rdivO(k0);
+z0 = zdivO(k0);
+
+s_qmax_ir = 1.5497;
+[~,k1] = min(abs(sDivO - s_qmax_ir));
+r1 = rdivO(k1);
+z1 = zdivO(k1);
+psi1 = bicubicHermite(rg,zg,psizr,r1,z1);
+
+scatter(r1,z1,'r','filled')
+scatter(r0,z0,'r','filled')
+
+dr = psi_r * (psi1-psi0) / (psi_r^2 + psi_z^2);
+dz = psi_z * (psi1-psi0) / (psi_r^2 + psi_z^2);
+
+% dr = -.01;
+% dz = -.008;
+
+
+
+
+
 
 % ..............
 % plot heat flux

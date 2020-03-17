@@ -1,29 +1,15 @@
+% function heatsim_debug(eq, shot, time_ms, opts)
 
-% ---------------------------------
-% USER / FUNCTION INPUTS
-% ---------------------------------
-% function heatsim_noEich(eq, shot, time_ms, opts)
+% load('init');
+% eq = init.gdata;
 
-shot = 155478; 
-time_ms = 1300;
-
-opts.saveit = 1;
+load('eq')
+shot = 165288;
+time_ms = 4200;
 opts.plotit = 1;
+opts.saveit = 1;
 opts.root = '/u/jwai/d3d_snowflake_2020/current/';
-opts.saveDir = '/u/jwai/d3d_snowflake_2020/current/debug/outputs/';
-
-% constrained cake eqs
-eqdir = '/u/jwai/d3d_snowflake_2020/current/outputs/eqs/155478/';
-eqdata = ['eq_c_' num2str(shot) '_' num2str(time_ms) '.mat'];
-load([eqdir eqdata])
-opts.saveDir = '/u/jwai/d3d_snowflake_2020/current/debug/outputs/constraine';
-
-% unconstrained cake eqs
-% root = '/u/jwai/d3d_snowflake_2020/current/';
-% eqdir = [root 'inputs/eqs/cake/' num2str(shot)];
-% timerange = [time_ms+16 time_ms-16]/1000;
-% eq = read_eq(shot, timerange, eqdir);
-% eq = eq.gdata;
+opts.saveDir = '/u/jwai/d3d_snowflake_2020/current/debug/outputs/c/';
 
 % ---------------------------------
 % ANALYZE THE SNOWFLAKE EQUILIBRIUM
@@ -319,6 +305,15 @@ idxInner = find(psiSOL > psixSL);  % flux tube MIGHT be between x-points
 idxOuter = setdiff(1:nSOL, idxInner); % flux tube outside x-pts
 
 
+% correct potential off-by-one errors in snowminus (doublecounted edge-pts)
+if snowMinLFS
+    rentrO = rentrO(idxOuter-min(idxOuter)+1);
+    zentrO = zentrO(idxOuter-min(idxOuter)+1);
+elseif snowMinHFS
+    rentrI = rentrI(idxOuter-min(idxOuter)+1);
+    zentrI = zentrI(idxOuter-min(idxOuter)+1);
+end
+
 % find rz coordinates of line between x-points (constant psi-spacing)
 rzLine = zeros(length(idxInner),2);
 
@@ -497,7 +492,6 @@ frad = 0.80;
                                        % closest to psi at primary x-pt                                       
 [~,iIS] = min(abs(psiSOLI - psixSL));  % index of pt " " " secondary x-pt
 [~,iXP] = min(abs(psiSOLX - psixPL));
-[~,iXS] = min(abs(psiSOLX - psixSL));
 [~,iOP] = min(abs(psiSOLO - psixPL));
 [~,iOS] = min(abs(psiSOLO - psixSL));
 
@@ -518,6 +512,27 @@ end
 [sSPI, sSPX, sSPO] = deal(sDivI(iI), sDivX(iX), sDivO(iO));
 [spRI, spRX, spRO] = deal(rdivI(iI), rdivX(iX), rdivO(iO));
 [spZI, spZX, spZO] = deal(zdivI(iI), zdivX(iX), zdivO(iO));
+
+%==========
+% DEBBUGGG
+%==========
+[~,k0] = max(qdiv_perpO);
+s_qmax_sim = sDivO(k0);
+[psi0, psi_r, psi_z] = bicubicHermite(rg,zg,psizr,rdivO(k0),zdivO(k0));
+r0 = rdivO(k0);
+z0 = zdivO(k0);
+
+s_qmax_ir = 1.5497;
+[~,k1] = min(abs(sDivO - s_qmax_ir));
+r1 = rdivO(k1);
+z1 = zdivO(k1);
+psi1 = bicubicHermite(rg,zg,psizr,r1,z1);
+
+scatter(r1,z1,'r','filled')
+scatter(r0,z0,'r','filled')
+
+dr = psi_r * (psi1-psi0) / (psi_r^2 + psi_z^2);
+dz = psi_z * (psi1-psi0) / (psi_r^2 + psi_z^2);
 
 
 % ..............
@@ -638,7 +653,6 @@ if saveit
     savefig(h, [saveDir fn]);       
 end
 
-% close all
 
 
 
