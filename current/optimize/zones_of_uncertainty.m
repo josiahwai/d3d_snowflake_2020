@@ -8,6 +8,7 @@ ccc
 dpsi = .002;
 plotit = 1;
 saveit = 1;
+runbatch = 1;
 
 np = 40;  % approximate number of sample x-pt locations
 shot = 165288;
@@ -15,8 +16,9 @@ time_ms = 2900;
 cake_zones = 0;
 efit_zones = ~cake_zones;
 root = '/u/jwai/d3d_snowflake_2020/current/';
+addpath(genpath(root));
 
-
+% use cake or efit to define uncertainty zones
 if cake_zones
     eqdir = [root 'inputs/eqs/cake/' num2str(shot)];
     timerange = [time_ms+16 time_ms-16]/1000;
@@ -175,7 +177,6 @@ scatter(rinS,zinS,'g','filled')
 % =============================================================
 % DOES qperp FROM IR PREDICT SNOWPLUS OR SNOWMINUS (2vs3 peaks)
 % =============================================================
-
 irdir = [root 'inputs/qperp/' num2str(shot) '/'];
 fn_ir = ['qperp_' num2str(shot) '.mat'];
 load([irdir fn_ir]) % loads qperp, t
@@ -183,16 +184,7 @@ load([irdir fn_ir]) % loads qperp, t
 [~,k] = min(abs(t-time_ms));
 q = qperp(k,:);
 
-% Remove the gap from s (distance along limiter)
-idxGap = find(s < 170);
-gap1 = s(idxGap(end));
-gap2 = s(idxGap(end)+1);
-dgap = gap2 - gap1;
-s(idxGap(end)+1:end) = s(idxGap(end)+1:end) - dgap;
-
-iI = find(s<115);
-iO = find(s>145);
-iX = setdiff(1:length(s), [iI iO]);
+iX = find(s >= 115 & s <= 145);
 
 % find region between x-pts peak
 [~,k] = findpeaks(q(iX),'NPeaks',1,'sortstr','descend','minpeakdistance',...
@@ -261,12 +253,75 @@ if saveit
     save([savedir fn], 'xp_list');
 end
 
-
 if plotit 
     figure(11)
     scatter(rinP(ip),zinP(ip),'r','filled')
     scatter(rinS(is),zinS(is),'r','filled')
+    
+    k = 1;
+    scatter(rinP(k),zinP(k),'b','filled')
+    scatter(rinS(k),zinS(k),'b','filled')
 end
+
+
+% ======================
+% SET UP FOR BATCH JOBS
+% ======================
+if runbatch
+    job_topdir = [root 'optimize/batch/'];
+    
+    % clear contents
+%     if exist(job_topdir,'dir'), rmdir(job_topdir,'s'); end
+%     mkdir(job_topdir)
+    
+    
+    for k = 1:1
+        
+        args = [k shot time_ms xp_list(k,:)];
+        jobdir = [job_topdir num2str(k)];
+        
+        mkdir(jobdir);
+        save([jobdir '/args.mat'], 'args');
+        
+        % copy script to jobdir
+        jobscript = [root 'optimize/design_eq_optimize.m'];                
+%         copyfile(jobscript, jobdir);
+        
+        % cd and submit batch job
+        cd(jobdir)
+        batchscript = [root 'optimize/design_eq_optimize.sbatch'];
+%         system(['submit ' batchscript]);
+        cd(job_topdir)                
+    end
+    
+    cd([root 'optimize'])
+end
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
