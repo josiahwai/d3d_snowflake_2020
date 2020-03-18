@@ -6,6 +6,8 @@
 % ----------------------
 % USER / FUNCTION INPUTS
 % ----------------------
+root = '/u/jwai/d3d_snowflake_2020/current/';
+addpath(genpath(root));
 
 load('args')
 [iSim,shot,time_ms,rxP,rxS,zxP,zxS] = unpack(args);
@@ -13,9 +15,6 @@ load('args')
 %--------------------------
 % DESIGN NEW EQUILIBRIUM
 %--------------------------
-root = '/u/jwai/d3d_snowflake_2020/current/';
-addpath(genpath(root));
-
 fprintf('\n\nshot: %d time: %d \n\n', shot, time_ms);
 
 % Load tokamak definition

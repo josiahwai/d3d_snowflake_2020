@@ -570,6 +570,7 @@ end
 qmax = max([qdiv_perpI; qdiv_perpX; qdiv_perpO]);
 
 % evaluate inner peak
+[qmaxI,q_fwhmI,s_qmaxI,r_qmaxI,z_qmaxI,psi_qmaxI] = unpack(nan(6,1));
 [qmaxI,k,q_fwhmI] = findpeaks(qdiv_perpI,'NPeaks',1,'sortstr','descend',...
             'minpeakheight', .05*qmax, 'minpeakprominence', .05*qmax);        
 
@@ -577,6 +578,7 @@ qmax = max([qdiv_perpI; qdiv_perpX; qdiv_perpO]);
 psi_qmaxI = interp2(rg,zg,psizr,r_qmaxI,z_qmaxI);
 
 % evaluate X peak
+[qmaxX,q_fwhmX,s_qmaxX,r_qmaxX,z_qmaxX,psi_qmaxX] = unpack(nan(6,1));
 if ~snowPlus && ~perfectSnow
     [qmaxX,k,q_fwhmX] = findpeaks(qdiv_perpX,'NPeaks',1,'sortstr','descend',...
         'minpeakheight', .05*qmax, 'minpeakprominence', .05*qmax);
@@ -586,6 +588,7 @@ if ~snowPlus && ~perfectSnow
 end
 
 % evaluate outer peak
+[qmaxO,q_fwhmO,s_qmaxO,r_qmaxO,z_qmaxO,psi_qmaxO] = unpack(nan(6,1));
 [qmaxO,k,q_fwhmO] = findpeaks(qdiv_perpO,'NPeaks',1,'sortstr','descend',...
             'minpeakheight', .05*qmax, 'minpeakprominence', .05*qmax);        
 

@@ -4,7 +4,7 @@ import numpy as np
 
 #MODIFY dirpath AS APPROPRIATE
 shot = 155355
-times = np.arange(2000,5100,100)
+times = np.arange(2000,2200,100)
 fn = '/design_eq_batch.m'
 
 shot_dir = '/u/jwai/d3d_snowflake_2020/current/batch_jobs/' + str(shot)

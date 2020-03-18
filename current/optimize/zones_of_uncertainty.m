@@ -4,13 +4,13 @@
 % =======================
 % USER/FUNCTION INPUTS
 % =======================
-ccc
-dpsi = .002;
-plotit = 1;
+clear; clc; close all;
+dpsi = .0015;
+plotit = 0;
 saveit = 1;
 runbatch = 1;
 
-np = 40;  % approximate number of sample x-pt locations
+np = 30;  % approximate number of sample x-pt locations
 shot = 165288;
 time_ms = 2900;
 cake_zones = 0;
@@ -256,11 +256,7 @@ end
 if plotit 
     figure(11)
     scatter(rinP(ip),zinP(ip),'r','filled')
-    scatter(rinS(is),zinS(is),'r','filled')
-    
-    k = 1;
-    scatter(rinP(k),zinP(k),'b','filled')
-    scatter(rinS(k),zinS(k),'b','filled')
+    scatter(rinS(is),zinS(is),'r','filled')     
 end
 
 
@@ -271,9 +267,12 @@ if runbatch
     job_topdir = [root 'optimize/batch/'];
     
     % clear contents
-%     if exist(job_topdir,'dir'), rmdir(job_topdir,'s'); end
-%     mkdir(job_topdir)
+    if exist(job_topdir,'dir'), rmdir(job_topdir,'s'); end
+    mkdir(job_topdir)
     
+        
+    batchscript = [root 'optimize/design_eq_optimize.sbatch'];
+    system(['dos2unix ' batchscript]);
     
     for k = 1:1
         
@@ -285,12 +284,11 @@ if runbatch
         
         % copy script to jobdir
         jobscript = [root 'optimize/design_eq_optimize.m'];                
-%         copyfile(jobscript, jobdir);
+        copyfile(jobscript, jobdir);
         
         % cd and submit batch job
-        cd(jobdir)
-        batchscript = [root 'optimize/design_eq_optimize.sbatch'];
-%         system(['submit ' batchscript]);
+        cd(jobdir)                
+        system(['sbatch ' batchscript]);
         cd(job_topdir)                
     end
     
