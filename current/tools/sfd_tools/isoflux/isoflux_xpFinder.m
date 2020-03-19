@@ -41,6 +41,8 @@ function [rx, zx, psix] = isoflux_xpFinder(psizr, rx0, zx0, rg, zg)
 %
 %..........................................................................
 
+fRelax = 0.5; % relaxation in step size for Newton steps
+
 % Grid point weighting matrix for cubic convolution (Keys, IEEE 1981)
 
 mx = 1/2 * [0 2 0 0; -1 0 1 0; 2 -5 4 -1; -1 3 -3 1];
@@ -66,7 +68,7 @@ if size(psizr,1) == 1 || size(psizr,2) == 1
     psizr = reshape(psizr, nz, nr);
 end
 
-ii  = 20;  % maximum of 20 iterations to find the null
+ii  = 200;  % maximum of 20 iterations to find the null
 brzmax = inf;
 
 rx = rx0;
@@ -123,7 +125,7 @@ while ii > 0 && brzmax > 1e-10
     psi_zz = ([0 0 2 6*tz]/dz^2)*mx*[b0 b1 b2 b3]';
     psi_rz = ([0 1 2*tz 3*tz^2]/dz)*mx*[b0_r b1_r b2_r b3_r]';
         
-    delta = -inv([psi_rr psi_rz; psi_rz psi_zz])*[psi_r; psi_z];
+    delta = -inv([psi_rr psi_rz; psi_rz psi_zz])*[psi_r; psi_z] * fRelax;
     rx = max(min(rx + delta(1),rg(end-2)),rg(3));
     zx = max(min(zx + delta(2),zg(end-2)),zg(3));
     
