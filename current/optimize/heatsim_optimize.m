@@ -1,4 +1,4 @@
-function heatsim_optimize(eq, shot, time_ms, opts)
+% function heatsim_optimize(eq, shot, time_ms, opts)
 
 % ----------------------
 % USER / FUNCTION INPUTS
@@ -63,14 +63,16 @@ psibry = eq.psibry;
 % finer mesh
 [psizr, rg, zg] = regrid(rg, zg, psizr, 257, 257);
 
-
 % Locate the snowflake in the lower divertor
-rExp   =  1.1500;
-zExp   = -1.2500;
-rhoExp =  0.1000;
+% ..........................................
 
-[rxPL, zxPL, rxSL, zxSL] = snowFinder(psizr, rExp, zExp, rhoExp, rg, zg);
+% get a good initial guess
+[r0,z0] = isoflux_xpFinder(psizr,1.15,-1.25,rg,zg); 
 
+% find the snowflake
+[rxPL, zxPL, rxSL, zxSL] = snowFinder(psizr, r0, z0, 0.1, rg, zg); 
+
+% zoom in on snowflake x-pts
 [rxPL, zxPL, psixPL] = isoflux_xpFinder(psizr, rxPL, zxPL, rg, zg);
 [rxSL, zxSL, psixSL] = isoflux_xpFinder(psizr, rxSL, zxSL, rg, zg);
 
@@ -301,16 +303,6 @@ zentrO = interp1(psiperpO, zperpO, psiSOL);
 idxInner = find(psiSOL > psixSL);  % flux tube MIGHT be between x-points
 idxOuter = setdiff(1:nSOL, idxInner); % flux tube outside x-pts
 
-
-% correct potential off-by-one errors in snowminus (doublecounted edge-pts)
-if snowMinLFS
-    rentrO = rentrO(idxOuter-min(idxOuter)+1);
-    zentrO = zentrO(idxOuter-min(idxOuter)+1);
-elseif snowMinHFS
-    rentrI = rentrI(idxOuter-min(idxOuter)+1);
-    zentrI = zentrI(idxOuter-min(idxOuter)+1);
-end
-
 % find rz coordinates of line between x-points (constant psi-spacing)
 rzLine = zeros(length(idxInner),2);
 
@@ -393,6 +385,22 @@ if plotit
 end
 
 
+% correct potential off-by-one errors in snowminus (doublecounted edge-pts)
+if snowMinLFS
+    if length(LdivX) + length(LdivO) > nSOL
+        LdivO(end) = [];
+        rdivO(end) = [];
+        zdivO(end) = [];
+    end    
+elseif snowMinHFS
+    if length(LdivX) + length(LdivI) > nSOL
+        LdivI(end) = [];
+        rdivI(end) = [];
+        zdivI(end) = [];
+    end 
+end
+
+
 %.........................
 % Heat equation parameters
 
@@ -470,6 +478,7 @@ if snowPlus || snowMinHFS
 elseif snowMinLFS
     iRegion = length(LdivX)+1:length(LdivX) + nRegion;
 end
+% iRegion = iRegion-1;
 
 q_par_midplane = q_parallel_OL(iRegion);
 psiSOLO = psiSOL(iRegion);
@@ -567,78 +576,36 @@ end
 
 % peaks from hf simulation
 %.........................
-qmax = max([qdiv_perpI; qdiv_perpX; qdiv_perpO]);
+pkthresh = 0.05;
 
-% evaluate inner peak
-[qmaxI,q_fwhmI,s_qmaxI,r_qmaxI,z_qmaxI,psi_qmaxI] = unpack(nan(6,1));
-[qmaxI,k,q_fwhmI] = findpeaks(qdiv_perpI,'NPeaks',1,'sortstr','descend',...
-            'minpeakheight', .05*qmax, 'minpeakprominence', .05*qmax);        
+[qmaxI, s_qmaxI, r_qmaxI, z_qmaxI, psi_qmaxI] = qpeak_info(...
+    qdiv_perpI, sdivI, pkthresh, sLimTot, limdata, rg, zg, psizr);
 
-[s_qmaxI,r_qmaxI, z_qmaxI] = unpack([sdivI(k) rdivI(k) zdivI(k)]);
-psi_qmaxI = interp2(rg,zg,psizr,r_qmaxI,z_qmaxI);
-
-% evaluate X peak
-[qmaxX,q_fwhmX,s_qmaxX,r_qmaxX,z_qmaxX,psi_qmaxX] = unpack(nan(6,1));
 if ~snowPlus && ~perfectSnow
-    [qmaxX,k,q_fwhmX] = findpeaks(qdiv_perpX,'NPeaks',1,'sortstr','descend',...
-        'minpeakheight', .05*qmax, 'minpeakprominence', .05*qmax);
-    
-    [s_qmaxX,r_qmaxX, z_qmaxX] = unpack([sdivX(k) rdivX(k) zdivX(k)]);
-    psi_qmaxX = interp2(rg,zg,psizr,r_qmaxX,z_qmaxX);
+    [qmaxX, s_qmaxX, r_qmaxX, z_qmaxX, psi_qmaxX] = qpeak_info(...
+        qdiv_perpX, sdivX, pkthresh, sLimTot, limdata, rg, zg, psizr);
+else
+    [qmaxX,s_qmaxX,r_qmaxX,z_qmaxX,psi_qmaxX] = unpack(nan(5,1));
 end
 
-% evaluate outer peak
-[qmaxO,q_fwhmO,s_qmaxO,r_qmaxO,z_qmaxO,psi_qmaxO] = unpack(nan(6,1));
-[qmaxO,k,q_fwhmO] = findpeaks(qdiv_perpO,'NPeaks',1,'sortstr','descend',...
-            'minpeakheight', .05*qmax, 'minpeakprominence', .05*qmax);        
-
-[s_qmaxO,r_qmaxO, z_qmaxO] = unpack([sdivO(k) rdivO(k) zdivO(k)]);
-psi_qmaxO = interp2(rg,zg,psizr,r_qmaxO,z_qmaxO);
+[qmaxO, s_qmaxO, r_qmaxO, z_qmaxO, psi_qmaxO] = qpeak_info(...
+    qdiv_perpO, sdivO, pkthresh, sLimTot, limdata, rg, zg, psizr);
 
 
 % peaks from IR data
 %....................
-
 iI = find(s<1.15);
 iO = find(s>1.45);
 iX = setdiff(1:length(s), [iI iO]);
 
-% find inner peak
-[qirmaxI,qir_fwhmI,s_qirmaxI,r_qirmaxI,z_qirmaxI,psi_qirmaxI] = unpack(nan(6,1));
-try
-    [qirmaxI,k,qir_fwhmI] = findpeaks(qir(iI),'NPeaks',1,'sortstr','descend',...
-        'minpeakheight',0.05*max(qir), 'minpeakprominence', 0.05*max(qir));
-    
-    if ~isempty(k), s_qirmaxI = s(min(iI)-1+k); end
-    [r_qirmaxI, z_qirmaxI] = calcLimDistanceInv(sLimTot-s_qirmaxI,limdata);
-    psi_qirmaxI = bicubicHermite(rg,zg,psizr,r_qirmaxI,z_qirmaxI);
-catch    
-end
+[qirmaxI, s_qirmaxI, r_qirmaxI, z_qirmaxI, psi_qirmaxI] = qpeak_info(...
+    qir(iI), s(iI), pkthresh, sLimTot, limdata, rg, zg, psizr);
 
-% find region X peak
-[qirmaxX,qir_fwhmX,s_qirmaxX,r_qirmaxX,z_qirmaxX,psi_qirmaxX] = unpack(nan(6,1));
-try
-    [qirmaxX,k,qir_fwhmX] = findpeaks(qir(iX),'NPeaks',1,'sortstr','descend',...
-        'minpeakheight',0.05*max(qir), 'minpeakprominence', 0.05*max(qir));
-    
-    if ~isempty(k), s_qirmaxX = s(min(iX)-1+k); end
-    [r_qirmaxX, z_qirmaxX] = calcLimDistanceInv(sLimTot-s_qirmaxX,limdata);
-    psi_qirmaxX = bicubicHermite(rg,zg,psizr,r_qirmaxX,z_qirmaxX);
-catch    
-end
+[qirmaxX, s_qirmaxX, r_qirmaxX, z_qirmaxX, psi_qirmaxX] = qpeak_info(...
+    qir(iX), s(iX), pkthresh, sLimTot, limdata, rg, zg, psizr);
 
-% find outer peak
-[qirmaxO,qir_fwhmO,s_qirmaxO,r_qirmaxO,z_qirmaxO,psi_qirmaxO] = unpack(nan(6,1));
-try
-    [qirmaxO,k,qir_fwhmO] = findpeaks(qir(iO),'NPeaks',1,'sortstr','descend',...
-        'minpeakheight',0.05*max(qir), 'minpeakprominence', 0.05*max(qir));
-    
-    if ~isempty(k), s_qirmaxO = s(min(iO)-1+k); end
-    [r_qirmaxO, z_qirmaxO] = calcLimDistanceInv(sLimTot-s_qirmaxO,limdata);
-    psi_qirmaxO = bicubicHermite(rg,zg,psizr,r_qirmaxO,z_qirmaxO);
-catch
-end
-
+[qirmaxO, s_qirmaxO, r_qirmaxO, z_qirmaxO, psi_qirmaxO] = qpeak_info(...
+    qir(iO), s(iO), pkthresh, sLimTot, limdata, rg, zg, psizr);
 
 
 %..............
@@ -658,12 +625,12 @@ rx =     [rxPL   rxSL  ];
 zx =     [zxPL   zxSL  ];
 psix =   [psixPL psixSL];
  
-cost = struct('s',s,'sir',sir,'r',r,'rir',rir,'z',z,'zir',zir,'psi',psi,...
+sim = struct('s',s,'sir',sir,'r',r,'rir',rir,'z',z,'zir',zir,'psi',psi,...
     'psiir',psiir,'qmax',qmax,'qirmax',qirmax,'rx',rx,'zx',zx,'psix',psix);   
 
 if saveit
-    fn = ['cost' num2str(iSim)]; 
-    save([saveDir fn], 'cost')
+    fn = ['sim' num2str(iSim)]; 
+    save([saveDir fn], 'sim')
     
     % save figs
     fn = ['sfd_geo_' num2str(iSim)]; 
