@@ -114,7 +114,7 @@ opts.saveit = 1;
 opts.saveDir = [root 'optimize/output/'];
 opts.root = root;
 
-heatsim_optimize(init.gdata,shot,time_ms,opts)
+heatsim_optimize(eq,shot,time_ms,opts)
 % save('eq','eq')
 % save('opts','opts')
 % heatsim_optimize

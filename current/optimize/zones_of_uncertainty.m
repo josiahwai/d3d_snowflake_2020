@@ -5,14 +5,14 @@
 % USER/FUNCTION INPUTS
 % =======================
 clear; clc; close all;
-dpsi = .0015;
-plotit = 0;
+dpsi = .0025;
+plotit = 1;
 saveit = 1;
 runbatch = 1;
 
 np = 30;  % approximate number of sample x-pt locations
 shot = 165288;
-time_ms = 2900;
+time_ms = 4200;
 cake_zones = 0;
 efit_zones = ~cake_zones;
 root = '/u/jwai/d3d_snowflake_2020/current/';
@@ -168,11 +168,12 @@ a = polyarea(rgg(bP),zgg(bP)) + polyarea(rgg(bS),zgg(bS));
 ppa = np/a;
 
 [rinP,zinP] = polygrid(rgg(bP), zgg(bP), ppa);
-scatter(rinP,zinP,'g','filled')
-
 [rinS,zinS] = polygrid(rgg(bS), zgg(bS), ppa);
-scatter(rinS,zinS,'g','filled')
 
+if plotit
+    scatter(rinP,zinP,'g')
+    scatter(rinS,zinS,'g')
+end
 
 % =============================================================
 % DOES qperp FROM IR PREDICT SNOWPLUS OR SNOWMINUS (2vs3 peaks)
@@ -219,23 +220,28 @@ psiS = bicubicHermite(rg,zg,psizr,rinS,zinS);
 
 iCombos = combvec(1:length(rinP), 1:length(rinS))'; 
 
-psiDiff = psiP(iCombos(:,1)) - psiS(iCombos(:,2));
-
+% psiDiff = psiP(iCombos(:,1)) - psiS(iCombos(:,2));
+rDiff = rinS(iCombos(:,2)) - rinP(iCombos(:,1));
+    
 % re-sort according to psi difference between sample pts
-[psiDiff,k] = sort(psiDiff);
+% [psiDiff,k] = sort(psiDiff);
+[rDiff,k] = sort(rDiff);
 iCombos = iCombos(k,:);
 
-
 % sample at least 30% of cases, all cases that have values of
-% psixP, psixS consistent with the snowtype
+% rxP, rxS consistent with the snowtype
+
+slack = 0.04; % 4cm of slack for snowtype
 f = 0.3;
 if snowPlus
-    k = find(psiDiff < 0); 
+    % k = find(psiDiff < 0); 
+    k = find(rDiff - slack < 0);
     if length(k) < f * length(iCombos)
         k = 1:floor(f*length(iCombos));
     end
 elseif snowMin
-    k = find(psiDiff > 0);
+    % k = find(psiDiff > 0);
+    k = find(rDiff + slack > 0);
     if length(k) < f*length(iCombos)
         k = floor((1-f)*length(iCombos)):length(iCombos);
     end
@@ -255,8 +261,11 @@ end
 
 if plotit 
     figure(11)
-    scatter(rinP(ip),zinP(ip),'r','filled')
-    scatter(rinS(is),zinS(is),'r','filled')     
+    scatter(rinP(ip),zinP(ip),'g')
+    scatter(rinS(is),zinS(is),'g')
+    if saveit
+        savefig('zones.fig')
+    end
 end
 
 
@@ -265,16 +274,19 @@ end
 % ======================
 if runbatch
     job_topdir = [root 'optimize/batch/'];
+    output_dir = [root 'optimize/output/'];
     
     % clear contents
     if exist(job_topdir,'dir'), rmdir(job_topdir,'s'); end
+    if exist(output_dir,'dir'), rmdir(output_dir,'s'); end
     mkdir(job_topdir)
-    
+    mkdir(output_dir)
         
+    
     batchscript = [root 'optimize/design_eq_optimize.sbatch'];
     system(['dos2unix ' batchscript]);
     
-    for k = 1:1
+    for k = 1:length(xp_list)
         
         args = [k shot time_ms xp_list(k,:)];
         jobdir = [job_topdir num2str(k)];

@@ -1,4 +1,4 @@
-% function heatsim_optimize(eq, shot, time_ms, opts)
+function heatsim_optimize(eq, shot, time_ms, opts)
 
 % ----------------------
 % USER / FUNCTION INPUTS
@@ -576,7 +576,7 @@ end
 
 % peaks from hf simulation
 %.........................
-pkthresh = 0.05;
+pkthresh = 1.5*median(qir);
 
 [qmaxI, s_qmaxI, r_qmaxI, z_qmaxI, psi_qmaxI] = qpeak_info(...
     qdiv_perpI, sdivI, pkthresh, sLimTot, limdata, rg, zg, psizr);
