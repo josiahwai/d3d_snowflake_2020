@@ -1,3 +1,4 @@
+function plot_eq(eq)
 
 if isfield(eq,'gdata')
     eq = eq.gdata;
@@ -12,6 +13,8 @@ limdata = tok_data_struct.limdata;
 psizr = eq.psizr;
 rg = eq.rg';
 zg = eq.zg;
+[psizr, rg, zg] = regrid(rg, zg, psizr, 257, 257);
+
 rExp   =  1.1500;
 zExp   = -1.2500;
 rhoExp =  0.1000;
@@ -23,8 +26,8 @@ rhoExp =  0.1000;
 
 plot(limdata(2,:), limdata(1,:), 'Color', [0.5 0.5 0.5], 'LineWidth', 3)
 hold on
-contour(rg,zg,psizr,[psixPL psixPL], 'r', 'linewidth', 2);
-contour(rg,zg,psizr,[psixSL psixSL], '--b', 'linewidth', 1);
+contour(rg,zg,psizr,[psixPL psixPL], 'r', 'linewidth', 1);
+contour(rg,zg,psizr,[psixSL psixSL], 'r', 'linewidth', 1);
 
 axis equal
 % axis([1.0 1.5 -1.4 -0.9])

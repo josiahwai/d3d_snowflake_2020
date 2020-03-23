@@ -8,7 +8,7 @@ clear; clc; close all;
 dpsi = .0025;
 plotit = 1;
 saveit = 1;
-runbatch = 1;
+runbatch = 0;
 
 np = 30;  % approximate number of sample x-pt locations
 shot = 165288;

@@ -1,9 +1,9 @@
 ccc
 shot = 165288;
 time_ms = 4200;
-wt_pk = [1 2 4];
-wt_q  = [1 1 2] * 0.02;
-wt_xp = 1;
+wt_pk = [1 1 20];
+wt_q  = [1 1 10] * 0.002;
+wt_xp = 0.001;
 
 
 root = '/u/jwai/d3d_snowflake_2020/current/';
@@ -107,7 +107,7 @@ try
         % x-pt movement
         dr = [sim.rx(1)-rxPL sim.rx(2)-rxSL];
         dz = [sim.zx(1)-zxPL sim.zx(2)-zxSL];    
-        j2 = wt_xp * sum(dr.*2 + dz.*2);
+        j = j + wt_xp * sum(dr.^2 + dz.^2);
         
         J(k) = j;
     end
