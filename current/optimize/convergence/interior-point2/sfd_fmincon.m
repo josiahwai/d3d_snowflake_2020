@@ -7,8 +7,7 @@ searchdir = [];
 clear designeq_cost
 
 % call optimization 
-x0 = [1.1179 1.1968 -1.1211 -1.2758];
-% x0 = [1.1056 1.1603 -1.2072 -1.2597];
+x0 = [1.1267    1.1472   -1.1665   -1.2909]; % predicted optimum from dflux1
 
 lb = x0-0.1;
 ub = x0+0.1;

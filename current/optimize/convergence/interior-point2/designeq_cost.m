@@ -2,11 +2,7 @@
 % Designs a new eq, simulates heat flux, and evaluates cost function based
 % on comparison to IR heat flux.
 
-
-% EFIT: xp = [1.1056 1.1603 -1.2072 -1.2597];
-% r_spd = [1.0160    1.0664    1.0664    1.3042];
-% z_spd = [-1.1078   -1.2745   -1.2745   -1.3630];
-
+% xp = [1.12 1.2 -1.15 -1.3];
 
 function J = designeq_cost(xp)
 
@@ -126,7 +122,7 @@ eq = gsdesign(spec, init.gdata, config);
 opts.iSim = iSim;
 opts.plotit = 1;
 opts.saveit = 1;
-opts.saveDir = [root 'optimize/convergence/output/'];
+opts.saveDir = [root 'optimize/convergence/interior-point2/output/'];
 opts.root = root;
 
 J = heatsim_cost(eq,shot,time_ms,opts);

@@ -1,18 +1,20 @@
 clear; clc; close all;
 
 plotit = 1;
-shot = 165288;
-time_ms = 4200;
+shot = 155355;
+time_ms = 4400;
 
 root = '/u/jwai/d3d_snowflake_2020/current/';
 addpath(genpath('/u/jwai/d3d_snowflake_2020/current')); 
 addpath(genpath('/u/jwai/d3d_snowflake_2020/test'));
 load('/u/jwai/d3d_snowflake_2020/current/inputs/tok_data/d3d_obj_mks_struct_6565.mat')
-efitdir = '/u/jwai/d3d_snowflake_2020/current/inputs/eqs/efit01/165288';
-
+efitdir = '/u/jwai/d3d_snowflake_2020/current/inputs/eqs/efit01/155355';
+% hfdir = '/u/jwai/d3d_snowflake_2020/current/outputs/hfsims/efit_unconstrained/165288/';
+% hffn = 'hfsim_165288_2900.mat';
+% load([hfdir hffn]);
+load('hfsim_155355_4400.mat')
 eq = read_eq(shot,time_ms,efitdir);
 eq = eq.gdata;
-
 
 % ---------------------
 % ANALYZE THE SNOWFLAKE
@@ -47,13 +49,13 @@ end
 R0 = (rxPL + rxSL)/2;
 Z0 = (zxPL + zxSL)/2;
 
-xp = [[.05 -.05  .05 -.05] [ 1.0160  1.0364  1.1341  1.2653]-R0];
-vp = [[.05 -.05 -.05  .05] [-1.1281 -1.2462 -1.3439 -1.3643]-Z0];
+% xp = [[.05 -.05  .05 -.05] [ 1.0160  1.0364  1.1341  1.2653]-R0];
+% vp = [[.05 -.05 -.05  .05] [-1.1281 -1.2462 -1.3439 -1.3643]-Z0];
 
-% xp = linspace(-.08,.2,10);
-% vp = linspace(-.1,.1,5);
-% c = combvec(xp,vp);
-% xp = c(1,:); vp = c(2,:);
+xp = linspace(-.1,.1,5);
+vp = linspace(-.1,.1,5);
+c = combvec(xp,vp);
+xp = c(1,:); vp = c(2,:);
 
 np = length(xp);
 
@@ -63,16 +65,24 @@ if plotit
   hold on
   axis equal
   axis([1.0 1.5 -1.4 -0.9])
-   scatter(R0+xp, Z0+vp,'b','filled')
+   scatter(R0+xp, Z0+vp,'g')
 end
 
-% const, l1, l2, q1, q2, q3, c1, c2, c3, c4
-Aeq = ...
+% curl-free constraint
+Aeq1 = ...
   [0 -1 0 2*R0 0 2*R0 0 0 0 0; 
   0 0 0 0 0 2*R0 6*R0^2 0 2*R0^2 0;
   0 0 0 0 -2*R0 0 0 2*R0^2 0 6*R0^2];
   
-beq = [0 0 0]';
+beq1 = [0 0 0]';
+
+% x-point constraint
+xx = [rxPL rxPL rxSL rxSL] - R0;
+vx = [zxPL zxPL zxSL zxSL] - Z0;
+
+Aeq2 = gradpolyterms(xx,vx);
+beq2 = [0 0 0 0]';
+
 
 % probe the plasma at np places
 [dpdx, dpdv] = gradpolyterms(xp,vp);
@@ -84,12 +94,10 @@ Ap = [p; dpdx; dpdv];
 bp = [psip psip_r psip_z]';
 
 
-% minimize over c, f(c) = norm(Ap*c-bp) subject to Aeq*c = beq
-% c := 10 taylor expansion coeffiecients  = const, l1, l2 ... c3, c4
-
-dum = pinv([Ap'*Ap Aeq'; Aeq zeros(3,3)]) * [Ap'*bp; beq];
-c = dum(1:10);  
-lam = dum(11:end); % lagrange multipliers
+% find the coeff
+Aeq = [Aeq1; Aeq2]; 
+beq = [beq1; beq2];
+c = leastsquare(Ap,bp,Aeq1,beq1);
 
 
 % fitted flux (psizr2)
@@ -118,12 +126,12 @@ end
 
 contour(rg, zg, psizr2, [psixPL2 psixPL2], 'b')
 contour(rg, zg, psizr2, [psixSL2 psixSL2], 'b')
-% scatter(rxPL2, zxPL2,'b','filled')
-% scatter(rxSL2, zxSL2,'b','filled')
+
+
 
 % ---------------------------------------
 % ESTIMATE NEW FLUX DISTRIBUTION FROM IR
-% ---------------------------------------h
+% ---------------------------------------
 
 % where is the peak based on IR
 % .............................
@@ -161,11 +169,6 @@ sLimTot = calcLimDistance(limdata(2,1), limdata(1,1), limdata);
 % where is the peak based on hf sim?
 % .................................
 
-hfdir = '/u/jwai/d3d_snowflake_2020/current/outputs/hfsims/efit_unconstrained/165288/';
-hffn = 'hfsim_165288_4200.mat';
-load([hfdir hffn]);
-
-
 [~,k] = max(hfsim.qdiv_perpI);
 s_qmaxI = sLimTot - calcLimDistance(hfsim.rdivI(k), hfsim.zdivI(k), limdata);
 
@@ -177,7 +180,10 @@ s_qmaxO = sLimTot - calcLimDistance(hfsim.rdivO(k), hfsim.zdivO(k), limdata);
 
 % how much should the strike points be moved
 ds = [s_qirmaxI s_qirmaxX s_qirmaxX s_qirmaxO] - [s_qmaxI s_qmaxX s_qmaxX s_qmaxO];
+ds(4) = ds(4);
+ds(1) = ds(1);
 
+Wsp = diag([2 2 20 20]);
 
 % find the current strike points 
 % ..............................
@@ -185,13 +191,13 @@ ds = [s_qirmaxI s_qirmaxX s_qirmaxX s_qirmaxO] - [s_qmaxI s_qmaxX s_qmaxX s_qmax
 % isoflux_spFinder is not robust and can only find it you start super close
 [rlim,zlim] = interparc(limdata(2,:), limdata(1,:), 500, true);
 psilim = bicubicHermite(rg,zg,psizr2,rlim,zlim);
-[~,k] = findpeaks(-abs(psilim - psixPL2));
+[~,k] = findpeaks(-abs(psilim - psixSL2));
 
-k = k(rlim(k) < 1.35 & rlim(k) > 0.8 & zlim(k) < -1 & zlim(k) > -1.4);
+k = k(rlim(k) < 1.36 & rlim(k) > 0.8 & zlim(k) < -1 & zlim(k) > -1.4);
 
 sprzI  = isoflux_spFinder(psizr2,psixPL2,rg,zg,[zlim rlim]',k(4)-5:k(4)+5);
 sprzXI = isoflux_spFinder(psizr2,psixPL2,rg,zg,[zlim rlim]',k(3)-5:k(3)+5);
-sprzXO = isoflux_spFinder(psizr2,psixSL2,rg,zg,[zlim rlim]',k(3)-5:k(3)+5);
+sprzXO = isoflux_spFinder(psizr2,psixSL2,rg,zg,[zlim rlim]',k(2)-5:k(2)+5);
 sprzO  = isoflux_spFinder(psizr2,psixSL2,rg,zg,[zlim rlim]',k(1)-5:k(1)+5);
 
 s_spI  = sLimTot - calcLimDistance(sprzI(1), sprzI(2), limdata);
@@ -209,7 +215,7 @@ for k = 1:4
   [r_spd(k), z_spd(k)] = calcLimDistanceInv(sLimTot - s_spd(k), limdata);
 end
 
-% scatter(r_spd,z_spd,'k','filled')
+scatter(r_spd,z_spd,'k','filled')
 
 % strike point polynomials
 p_spd = polyterms(r_spd - R0, z_spd - Z0);
@@ -221,18 +227,18 @@ for iter = 1:10
   xx = [rxPL2 rxPL2 rxSL2 rxSL2] - R0;
   vx = [zxPL2 zxPL2 zxSL2 zxSL2] - Z0;
   p_xp = polyterms(xx,vx);
-
+  
+  
+  
   % Constrain
-  Wsp = diag([1 2 2 20]);
-  % Wc  = diag([1 R0 R0 R0^2 R0^2 R0^2 R0^3 R0^3 R0^3 R0^3]);
-  Wc = eye(10);
+  
+  Wc  = diag([1 R0 R0 R0^2 R0^2 R0^2 R0^3 R0^3 R0^3 R0^3]);
+%   Wc = eye(10);
   
   Air = blkdiag(Wsp,Wc)*[p_spd - p_xp; eye(10)];
   bir = [zeros(4,1); Wc*c];
   
-  dum = pinv([Air'*Air Aeq'; Aeq zeros(3,3)]) * [Air'*bir; beq];
-  c_new = dum(1:10);
-  lam = dum(11:end);
+  c_new = leastsquare(Air,bir,Aeq1,beq1);
 
   % -------------------------------
   % ANALYZE THE IR-CONSTRAINED FLUX
@@ -276,11 +282,11 @@ plot(r, z, 'xb', 'Markersize', 10, 'LineWidth', 4)
 [r(1) r(2) z(1) z(2)] = unpack(history.x(end,:));
 plot(r, z, 'xk', 'Markersize', 10, 'LineWidth', 4)
 
-
 plot([rxPL2 rxSL2], [zxPL2 zxSL2], 'xr', 'Markersize', 10, 'LineWidth', 4)
-set(gcf,'position',[26 256 560 420])
 
+set(gcf,'position',[1300 383 560 420])
 
+xp = [rxPL rxSL zxPL zxSL];
 
 
 

@@ -8,22 +8,39 @@
 % z_spd = [-1.1078   -1.2745   -1.2745   -1.3630];
 
 
-function J = designeq_cost(xp)
-
+% function J = designeq_cost_sp
+ccc
 root = '/u/jwai/d3d_snowflake_2020/current/';
 addpath(genpath(root));
 
-try    
+  
 % ----------------------
 % USER / FUNCTION INPUTS
 % ----------------------
-shot = 165288;
-time_ms = 4200;
+
+% 165288: 4200
+% xp = [1.1056 1.1603 -1.2072 -1.2597];
+% r_spd = [1.0160    1.0664    1.3042] + [0 0 0];
+% z_spd = [-1.1078   -1.2745  -1.3630] + [0 0 0];
+
+% 165288: 4500
+% xp = [1.1221    1.1513   -1.1679   -1.2897];
+% r_spd = [1.0160  1.0698  1.3037];
+% z_spd = [-1.1069 -1.2780  -1.3630] + [.03 0 0];
+
+% 155355: 4500
+xp = [1.1575    1.1866   -1.1958   -1.3265];
+r_spd = [1.0160    1.0685];
+z_spd = [-1.0776   -1.2767];
+
+shot = 155355;
+time_ms = 4500;
 [rxP,rxS,zxP,zxS] = unpack(xp);
 
-persistent iSim
-if isempty(iSim), iSim = 0; end
-iSim = iSim + 1;
+% persistent iSim
+% if isempty(iSim), iSim = 0; end
+% iSim = iSim + 1;
+iSim = 1;
 
 %--------------------------
 % DESIGN NEW EQUILIBRIUM
@@ -62,11 +79,22 @@ spec.weights.cpasma = 1;
 %........................
 % x-pt prediction 
 
-spec.locks.rx = [rxP rxS];
-spec.locks.zx = [zxP zxS];
-% spec.targets.rx = [rxP rxS];
-% spec.targets.zx = [zxP zxS];
-% spec.weights.x = [1 1] * 1e4;
+% debuggg
+%================================
+
+% spec.locks.rsep = r_spd;
+% spec.locks.zsep = z_spd;
+spec.targets.rsep = [spec.targets.rsep' r_spd];
+spec.targets.zsep = [spec.targets.zsep' z_spd];
+spec.weights.sep  = [spec.weights.sep' 1e6 1e6];
+
+% spec.locks.rx = [rxP rxS];
+% spec.locks.zx = [zxP zxS];
+
+spec.targets.rx = [rxP rxS];
+spec.targets.zx = [zxP zxS];
+spec.weights.x = [1 1e5] * 1;
+%================================
 
 spec.targets.rbdef = rxP;
 spec.targets.zbdef = zxP;
@@ -123,22 +151,24 @@ eq = gsdesign(spec, init.gdata, config);
 
 
 % run heatsim
-opts.iSim = iSim;
+opts.iSim = 2;
 opts.plotit = 1;
 opts.saveit = 1;
-opts.saveDir = [root 'optimize/convergence/output/'];
+opts.saveDir = '/u/jwai/d3d_snowflake_2020/current/debug/';
 opts.root = root;
 
 J = heatsim_cost(eq,shot,time_ms,opts);
 
-catch
-warning('Sim did not run')
-J = 1.0;
-end
 if isnan(J) || isinf(J)
     J = 1.0;  % large penalty
 end
-end
+
+figure(11)
+plot(xp(1:2), xp(3:4), 'xr', 'Markersize', 10, 'LineWidth', 4)
+r = [.1260    1.1480    1.1362    1.1401    1.1186 1.1312    1.1186    1.1312];
+z = [ -1.1105   -1.2682   -1.0932   -1.2812   -1.1100 -1.2710   -1.1100   -1.2710];
+plot(r, z, 'xk', 'Markersize', 10, 'LineWidth', 4)
+scatter(r_spd,z_spd,'k','filled')
 
 
 

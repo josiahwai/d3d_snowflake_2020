@@ -1,21 +1,17 @@
-% function heatsim_debug(eq, shot, time_ms, opts)
+function J = heatsim_cost(eq, shot, time_ms, opts)
+% ----------------------
+% USER / FUNCTION INPUTS
+% ----------------------
+wt_pk = [1 1 20];
+wt_q  = [1 1 10] * 0.002;
+wt_xp = 0.1;
 
-% load('init');
-% eq = init.gdata;
-
-load('eq')
-shot = 165288;
-time_ms = 4200;
-opts.plotit = 1;
-opts.saveit = 1;
-opts.root = '/u/jwai/d3d_snowflake_2020/current/';
-opts.saveDir = '/u/jwai/d3d_snowflake_2020/current/debug/outputs/c/';
 
 % ---------------------------------
 % ANALYZE THE SNOWFLAKE EQUILIBRIUM
 % ---------------------------------
 close all
-struct_to_ws(opts);
+struct_to_ws(opts); % poofs the vars: iSim,plotit,saveit,root,saveDir
 
 % Load tokamak definition
 tokdir = [root 'inputs/tok_data/'];
@@ -44,7 +40,7 @@ if plotit
     axis([1.0 1.5 -1.4 -0.9])
     xlabel('R [m]')
     ylabel('Z [m]')
-    title([int2str(shot) ': ' int2str(time_ms) ' ms'])
+    title([num2str(shot) ': ' num2str(time_ms) ' ms'])
 end
     
 rg = eq.rg; 
@@ -66,14 +62,16 @@ psibry = eq.psibry;
 % finer mesh
 [psizr, rg, zg] = regrid(rg, zg, psizr, 257, 257);
 
-
 % Locate the snowflake in the lower divertor
-rExp   =  1.1500;
-zExp   = -1.2500;
-rhoExp =  0.1000;
+% ..........................................
 
-[rxPL, zxPL, rxSL, zxSL] = snowFinder(psizr, rExp, zExp, rhoExp, rg, zg);
+% get a good initial guess
+[r0,z0] = isoflux_xpFinder(psizr,1.15,-1.25,rg,zg); 
 
+% find the snowflake
+[rxPL, zxPL, rxSL, zxSL] = snowFinder(psizr, r0, z0, 0.1, rg, zg); 
+
+% zoom in on snowflake x-pts
 [rxPL, zxPL, psixPL] = isoflux_xpFinder(psizr, rxPL, zxPL, rg, zg);
 [rxSL, zxSL, psixSL] = isoflux_xpFinder(psizr, rxSL, zxSL, rg, zg);
 
@@ -113,7 +111,7 @@ end
 
 if plotit    
     contour(rg, zg, psizr, [psixPL psixPL], 'b', 'LineWidth', 2)
-    contour(rg, zg, psizr, [psixSL psixSL], 'b', 'LineWidth', 1)
+    contour(rg, zg, psizr, [psixSL psixSL], 'r', 'LineWidth', 1)
     
     plot(rxPL, zxPL, 'xb', 'Markersize', 12, 'LineWidth', 3)
     plot(rxSL, zxSL, 'xb', 'Markersize', 12, 'LineWidth', 3)
@@ -304,16 +302,6 @@ zentrO = interp1(psiperpO, zperpO, psiSOL);
 idxInner = find(psiSOL > psixSL);  % flux tube MIGHT be between x-points
 idxOuter = setdiff(1:nSOL, idxInner); % flux tube outside x-pts
 
-
-% correct potential off-by-one errors in snowminus (doublecounted edge-pts)
-if snowMinLFS
-    rentrO = rentrO(idxOuter-min(idxOuter)+1);
-    zentrO = zentrO(idxOuter-min(idxOuter)+1);
-elseif snowMinHFS
-    rentrI = rentrI(idxOuter-min(idxOuter)+1);
-    zentrI = zentrI(idxOuter-min(idxOuter)+1);
-end
-
 % find rz coordinates of line between x-points (constant psi-spacing)
 rzLine = zeros(length(idxInner),2);
 
@@ -396,6 +384,22 @@ if plotit
 end
 
 
+% correct potential off-by-one errors in snowminus (doublecounted edge-pts)
+if snowMinLFS
+    if length(LdivX) + length(LdivO) > nSOL
+        LdivO(end) = [];
+        rdivO(end) = [];
+        zdivO(end) = [];
+    end    
+elseif snowMinHFS
+    if length(LdivX) + length(LdivI) > nSOL
+        LdivI(end) = [];
+        rdivI(end) = [];
+        zdivI(end) = [];
+    end 
+end
+
+
 %.........................
 % Heat equation parameters
 
@@ -416,7 +420,7 @@ if ~snowPlus, tauX = LdivX/cs; end
 %........................................................
 % Compute the heat flux profile region between 2 x-points
 qdiv_perpX = NaN;
-sDivX = NaN;
+sdivX = NaN;
 psiSOLX = NaN;
 qdiv_parX = NaN;
 if ~snowPlus && ~perfectSnow
@@ -434,7 +438,7 @@ if ~snowPlus && ~perfectSnow
     psiSOLX = psiSOL(iRegion);
     
     % find heat flux
-    [qdiv_perpX, sDivX, qdiv_parX] = ...
+    [qdiv_perpX, sdivX, qdiv_parX] = ...
         find_qperp(nRegion, iRegion, psiperpX, tauX, q_par_midplane, frad, ...
         chi, psiSOLX, rdivX, zdivX, limdata, psizr, rg, zg, bzero, rzero, ...
         sLimTot);
@@ -458,7 +462,7 @@ psiSOLI = psiSOL(iRegion);
 frad = 0.80; 
 
 % find heat flux
-[qdiv_perpI, sDivI, qdiv_parI] = ...
+[qdiv_perpI, sdivI, qdiv_parI] = ...
     find_qperp(nRegion, iRegion, psiperpI, tauI, q_par_midplane, frad, ...
     chi, psiSOLI, rdivI, zdivI, limdata, psizr, rg, zg, bzero, rzero, ...
     sLimTot);
@@ -473,13 +477,14 @@ if snowPlus || snowMinHFS
 elseif snowMinLFS
     iRegion = length(LdivX)+1:length(LdivX) + nRegion;
 end
+% iRegion = iRegion-1;
 
 q_par_midplane = q_parallel_OL(iRegion);
 psiSOLO = psiSOL(iRegion);
 frad = 0.80; 
 
 % find heat flux
-[qdiv_perpO, sDivO, qdiv_parO] = ...
+[qdiv_perpO, sdivO, qdiv_parO] = ...
     find_qperp(nRegion, iRegion, psiperpO, tauO, q_par_midplane, frad, ...
     chi, psiSOLO, rdivO, zdivO, limdata, psizr, rg, zg, bzero, rzero, ...
     sLimTot);
@@ -509,30 +514,9 @@ elseif snowMinHFS
     iX = iXP;
 end
 
-[sSPI, sSPX, sSPO] = deal(sDivI(iI), sDivX(iX), sDivO(iO));
+[sSPI, sSPX, sSPO] = deal(sdivI(iI), sdivX(iX), sdivO(iO));
 [spRI, spRX, spRO] = deal(rdivI(iI), rdivX(iX), rdivO(iO));
 [spZI, spZX, spZO] = deal(zdivI(iI), zdivX(iX), zdivO(iO));
-
-%==========
-% DEBBUGGG
-%==========
-[~,k0] = max(qdiv_perpO);
-s_qmax_sim = sDivO(k0);
-[psi0, psi_r, psi_z] = bicubicHermite(rg,zg,psizr,rdivO(k0),zdivO(k0));
-r0 = rdivO(k0);
-z0 = zdivO(k0);
-
-s_qmax_ir = 1.5497;
-[~,k1] = min(abs(sDivO - s_qmax_ir));
-r1 = rdivO(k1);
-z1 = zdivO(k1);
-psi1 = bicubicHermite(rg,zg,psizr,r1,z1);
-
-scatter(r1,z1,'r','filled')
-scatter(r0,z0,'r','filled')
-
-dr = psi_r * (psi1-psi0) / (psi_r^2 + psi_z^2);
-dz = psi_z * (psi1-psi0) / (psi_r^2 + psi_z^2);
 
 
 % ..............
@@ -544,7 +528,7 @@ if plotit
    
    xlabel('s [cm]')
    ylabel('Heat Flux [MW/m^2]')
-   title([int2str(shot) ': ' int2str(time_ms) ' ms'])
+   title([num2str(shot) ': ' num2str(time_ms) ' ms'])
 
    maxQ = max([qdiv_perpI; qdiv_perpX; qdiv_perpO]);   
    ylim(1.10*[0 maxQ])
@@ -554,12 +538,12 @@ if plotit
    xline(s45Deg1, '--k');
    xline(s45Deg2, '--k');
    
-   plot(sDivI, qdiv_perpI, '-or', 'LineWidth', 1, 'MarkerSize', 2)
-   plot(sDivO, qdiv_perpO, '-ob', 'LineWidth', 1, 'MarkerSize', 2)   
+   plot(sdivI, qdiv_perpI, '-or', 'LineWidth', 1, 'MarkerSize', 2)
+   plot(sdivO, qdiv_perpO, '-ob', 'LineWidth', 1, 'MarkerSize', 2)   
 
    if ~snowPlus && ~perfectSnow
        xline(sSPX, 'k');
-       plot(sDivX, qdiv_perpX, '-og', 'LineWidth', 1, 'MarkerSize', 2)
+       plot(sdivX, qdiv_perpX, '-og', 'LineWidth', 1, 'MarkerSize', 2)
    end
    
    % .............
@@ -572,7 +556,7 @@ if plotit
    load([qperp_dir qperp_data])  % loads q, s, and t
    
    [~,k] = min(abs(t-time_ms));
-   qperp = qperp(k,:)'/100;
+   qir = qperp(k,:)'/100;
    s = s/100;
    
    % Remove the gap from s (distance along limiter)
@@ -581,80 +565,171 @@ if plotit
    
    s(iGap(end)+1:end) = s(iGap(end)+1:end) - dgap;
    
-   plot(s, qperp, '-ok', 'LineWidth', 1, 'MarkerSize', 2)
+   plot(s, qir, '-ok', 'LineWidth', 1, 'MarkerSize', 2)
    
 end
 
+% ------------------
+% ANALYSIS OF PEAKS
+% ------------------
+
+% peaks from hf simulation
+%.........................
+pkthresh = 1.5*median(qir);
+
+[qmaxI, s_qmaxI, r_qmaxI, z_qmaxI, psi_qmaxI] = qpeak_info(...
+    qdiv_perpI, sdivI, pkthresh, sLimTot, limdata, rg, zg, psizr);
+
+if ~snowPlus && ~perfectSnow
+    [qmaxX, s_qmaxX, r_qmaxX, z_qmaxX, psi_qmaxX] = qpeak_info(...
+        qdiv_perpX, sdivX, pkthresh, sLimTot, limdata, rg, zg, psizr);
+else
+    [qmaxX,s_qmaxX,r_qmaxX,z_qmaxX,psi_qmaxX] = unpack(nan(5,1));
+end
+
+[qmaxO, s_qmaxO, r_qmaxO, z_qmaxO, psi_qmaxO] = qpeak_info(...
+    qdiv_perpO, sdivO, pkthresh, sLimTot, limdata, rg, zg, psizr);
 
 
+% peaks from IR data
+%....................
+iI = find(s<1.15);
+iO = find(s>1.45);
+iX = setdiff(1:length(s), [iI iO]);
 
+[qirmaxI, s_qirmaxI, r_qirmaxI, z_qirmaxI, psi_qirmaxI] = qpeak_info(...
+    qir(iI), s(iI), pkthresh, sLimTot, limdata, rg, zg, psizr);
 
+[qirmaxX, s_qirmaxX, r_qirmaxX, z_qirmaxX, psi_qirmaxX] = qpeak_info(...
+    qir(iX), s(iX), pkthresh, sLimTot, limdata, rg, zg, psizr);
 
-%...............................................................................
-% Save the data   
-hfsim = struct(              ...
-    'shot',          shot,           ...
-    'time_ms',       time_ms,        ...
-    'snowType',      snowType,       ...
-    'rg257',         rg,             ...
-    'zg257',         zg,             ...
-    'psizr257257',   psizr,          ...
-    'rxPL',          rxPL,           ...
-    'rxSL',          rxSL,           ...
-    'zxPL',          zxPL,           ...
-    'zxSL',          zxSL,           ...
-    'psixPL',        psixPL,         ...
-    'psixSL',        psixSL,         ...
-    'rentrI',        rentrI,         ...
-    'zentrI',        zentrI,         ...
-    'rentrX',        rentrX,         ...
-    'zentrX',        zentrX,         ...
-    'rentrO',        rentrO,         ...
-    'zentrO',        zentrO,         ...
-    'LdivI',         LdivI,          ...
-    'LdivX',         LdivX,          ...
-    'LdivO',         LdivO,          ...    
-    'rdivI',         rdivI,          ...
-    'zdivI',         zdivI,          ...  
-    'rdivX',         rdivX,          ...
-    'zdivX',         zdivX,          ...  
-    'rdivO',         rdivO,          ...
-    'zdivO',         zdivO,          ...      
-    'spRI',          spRI,           ...
-    'spRX',          spRX,           ... 
-    'spRO',          spRO,           ...
-    'spZI',          spZI,           ...
-    'spZX',          spZX,           ... 
-    'spZO',          spZO,           ...
-    'sSPI',          sSPI,           ...
-    'sSPX',          sSPX,           ...
-    'sSPO',          sSPO,           ...
-    'qdiv_parI',     qdiv_parI,      ...
-    'qdiv_parX',     qdiv_parX,      ...
-    'qdiv_parO',     qdiv_parO,      ...
-    'qdiv_perpI',    qdiv_perpI',    ...
-    'qdiv_perpX',    qdiv_perpX',    ...
-    'qdiv_perpO',    qdiv_perpO',    ... 
-    's45Deg1',       s45Deg1,        ...
-    's45Deg2',       s45Deg2         ...
-);
+[qirmaxO, s_qirmaxO, r_qirmaxO, z_qirmaxO, psi_qirmaxO] = qpeak_info(...
+    qir(iO), s(iO), pkthresh, sLimTot, limdata, rg, zg, psizr);
+
+%..............
+% Save the data  
+
+s =      [s_qmaxI     s_qmaxX     s_qmaxO    ];
+sir =    [s_qirmaxI   s_qirmaxX   s_qirmaxO  ];
+r =      [r_qmaxI     r_qmaxX     r_qmaxO    ];
+rir =    [r_qirmaxI   r_qirmaxX   r_qirmaxO  ];
+z =      [z_qmaxI     z_qmaxX     z_qmaxO    ];
+zir =    [z_qirmaxI   z_qirmaxX   z_qirmaxO  ];
+psi =    [psi_qmaxI   psi_qmaxX   psi_qmaxO  ];
+psiir =  [psi_qirmaxI psi_qirmaxX psi_qirmaxO];
+qmax =   [qmaxI       qmaxX       qmaxO      ];
+qirmax = [qirmaxI     qirmaxX     qirmaxO    ];
+rx =     [rxPL   rxSL  ];
+zx =     [zxPL   zxSL  ];
+psix =   [psixPL psixSL];
+ 
+sim = struct('s',s,'sir',sir,'r',r,'rir',rir,'z',z,'zir',zir,'psi',psi,...
+    'psiir',psiir,'qmax',qmax,'qirmax',qirmax,'rx',rx,'zx',zx,'psix',psix);   
 
 if saveit
-    fn = ['hfsim_' int2str(shot) '_' int2str(time_ms) '.mat']; 
-    save([saveDir fn], 'hfsim')
+    fn = ['sim' num2str(iSim)]; 
+    save([saveDir fn], 'sim')
     
     % save figs
-    fn = ['sfd_geo_' int2str(shot) '_' int2str(time_ms)]; 
+    fn = ['sfd_geo_' num2str(iSim)]; 
     figure(11); h = gcf;
     savefig(h, [saveDir fn]);
     
-    fn = ['heat_profile_' int2str(shot) '_' int2str(time_ms)]; 
+    fn = ['heat_profile_' num2str(iSim)]; 
     figure(2); h = gcf;
     savefig(h, [saveDir fn]);       
 end
 
 
+% ------------------
+% EVALUATE THE COST
+% ------------------
 
+% load and analyze original efit_eq
+% (used to penalize xp movement)
+%..................................
+efit_dir = [root 'inputs/eqs/efit01/' num2str(shot)];
+eq = read_eq(shot, time_ms/1000, efit_dir);
+
+% find the snowflake
+psizr  = eq.gdata.psizr;
+psibry = eq.gdata.psibry;
+[psizr, rg, zg] = regrid(eq.gdata.rg, eq.gdata.zg, psizr, 257, 257);
+[rxPL, zxPL, rxSL, zxSL] = snowFinder(psizr, 1.15, -1.25, 0.1, rg, zg);
+[rxPL, zxPL, psixPL] = isoflux_xpFinder(psizr, rxPL, zxPL, rg, zg);
+[rxSL, zxSL, psixSL] = isoflux_xpFinder(psizr, rxSL, zxSL, rg, zg);
+
+if abs(psixSL - psibry) < abs(psixPL - psibry)
+    swap(psixPL, psixSL);
+    swap(rxPL, rxSL);
+    swap(zxPL, zxSL);   
+end
+
+% Is heatflux consistent with the snowtype?
+%..........................................
+
+% snowflake type based on ir
+snowplus = 0;
+if isnan(sim.qirmax(2)), snowplus = 1; end
+
+% snowflake type from sim / flux
+snowplus_pred = 0;
+if sim.psix(1) < sim.psix(2), snowplus_pred = 1; end
+
+
+% only evaluate cost if eq is approximately the right type of snowflake
+matchesSnowType = 0;
+noisefloor = median(qir);
+
+if snowplus == snowplus_pred
+    matchesSnowType = 1;
+elseif snowplus
+    % sim predicts snowminus, but the x-peak is small
+    if isnan(sim.qmax(2)) || sim.qmax(2) < 1.5*noisefloor
+        matchesSnowType = 1;
+    end
+elseif ~snowplus
+    % sim predicts snowplus, but the IR x-peak is small
+    if isnan(sim.qirmax(2)) || sim.qirmax(2) < 1.5*noisefloor
+        matchesSnowType = 1;
+    end
+end
+
+
+J = 0.0;
+
+% what to include in cost analysis
+usepkI = ~isnan(sim.sir(1));
+usepkX = (~isnan(sim.sir(2)) | ~isnan(sim.s(2))) &...
+    sim.qirmax(2) > 2*noisefloor;
+usepkO = ~isnan(sim.sir(3));
+
+% rescale q peak magntiudes
+qmax = sim.qmax;
+qmax(isnan(qmax)) = 0;
+qmax = qmax / sum(qmax);
+
+qirmax = sim.qirmax;
+qirmax(isnan(qirmax)) = 0;
+qirmax = qirmax / sum(qirmax);
+
+ipk = boolean([usepkI usepkX usepkO]);
+
+% peak distances
+J = J + sum(wt_pk(ipk) .* (sim.s(ipk) - sim.sir(ipk)).^2);
+
+% peak relative magnitudes
+J = J + sum(wt_q(ipk) .* (qmax(ipk) - qirmax(ipk)).^2);
+
+% x-pt movement
+dr = [sim.rx(1)-rxPL sim.rx(2)-rxSL];
+dz = [sim.zx(1)-zxPL sim.zx(2)-zxSL];
+J = J + wt_xp * sum(dr.^2 + dz.^2);
+  
+if ~matchesSnowType
+    J = J + 0.1; % large penalty
+end
+J = double(J); 
 
 
 
