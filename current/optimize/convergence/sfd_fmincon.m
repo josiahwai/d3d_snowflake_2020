@@ -3,7 +3,6 @@ function [history,searchdir] = sfd_fmincon
 % Set up shared variables with OUTFUN
 history.x = [];
 history.fval = [];
-searchdir = [];
 clear designeq_cost
 
 % call optimization 

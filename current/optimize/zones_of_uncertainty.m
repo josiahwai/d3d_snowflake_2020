@@ -5,7 +5,7 @@
 % USER/FUNCTION INPUTS
 % =======================
 clear; clc; close all;
-dpsi = .0025;
+dpsi = .01;
 plotit = 1;
 saveit = 1;
 runbatch = 0;
