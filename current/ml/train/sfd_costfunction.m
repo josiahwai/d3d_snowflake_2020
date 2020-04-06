@@ -44,12 +44,13 @@ try
   end
   
   J = double(J);  
-    
-  fprintf(['\nCost: ' num2str(J) '  XP: ' num2str(xp) '\n'])
-  
+        
 catch 
-  J = 1;
+  J = 10;
+  fprintf('Warning: simulation did not run')
 end
+
+fprintf(['\nCost: ' num2str(J) '  XP: ' num2str(xp) '\n'])
 
 
 

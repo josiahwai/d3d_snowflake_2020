@@ -7,6 +7,7 @@
 % USER / FUNCTION INPUTS
 % ----------------------
 function eq = designeq_ml(xp,shot,time_ms)
+clear spec init config gsdesign
 
 root = '/u/jwai/d3d_snowflake_2020/current/';
 [rxP,rxS,zxP,zxS] = unpack(xp);
@@ -34,8 +35,10 @@ config.plot_settings.SOL.n = 10;
 config.plot_settings.SOL.d = 1e-3;
 
 % Specify where the flux should equal the boundary flux
-spec.targets.rsep = init.gdata.rbbbs([1:60 82:89]);
-spec.targets.zsep = init.gdata.zbbbs([1:60 82:89]);
+[rbbbs,zbbbs] = deal(init.gdata.rbbbs, init.gdata.zbbbs);
+k = find(zbbbs > -0.65 | rbbbs > 1.85);
+spec.targets.rsep = rbbbs(k);
+spec.targets.zsep = zbbbs(k);
 spec.weights.sep  = ones(length(spec.targets.rsep),1) * 1e3;
 
 %..........................

@@ -62,10 +62,10 @@ psibry = eq.psibry;
 
 % find the snowflake
 [rxPL, zxPL, rxSL, zxSL] = snowFinder(psizr, r0, z0, 0.1, rg, zg); 
-if rxP < min(rg), rxP = rxP + .02; end
-if rxS < min(rg), rxS = rxS + .02; end
-if zxP < min(zg), zxP = zxP + .02; end
-if zxS < min(zg), zxS = zxS + .02; end
+if rxPL < min(rg), rxPL = min(rg) + .04; end
+if rxSL < min(rg), rxSL = min(rg) + .04; end
+if zxPL < min(zg), zxPL = min(zg) + .04; end
+if zxSL < min(zg), zxSL = min(zg) + .04; end
 
 % zoom in on snowflake x-pts
 [rxPL, zxPL, psixPL] = isoflux_xpFinder(psizr, rxPL, zxPL, rg, zg);
@@ -537,45 +537,13 @@ dgap = s(iGap+1) - s(iGap);
 s(iGap(end)+1:end) = s(iGap(end)+1:end) - dgap;
 
 
-% plot heat flux
-% ..............
-if plotit
-  
-  figure(2)
-  hold on
-  
-  xlabel('s [cm]')
-  ylabel('Heat Flux [MW/m^2]')
-  title([num2str(shot) ': ' num2str(time_ms) ' ms'])
-  
-  maxQ = max([qdiv_perpI; qdiv_perpX; qdiv_perpO]);
-  ylim(1.10*[0 maxQ])
-  
-  xline(sSPI, 'k');
-  xline(sSPO, 'k');
-  xline(s45Deg1, '--k');
-  xline(s45Deg2, '--k');
-  
-  plot(sdivI, qdiv_perpI, '-or', 'LineWidth', 1, 'MarkerSize', 2)
-  plot(sdivO, qdiv_perpO, '-ob', 'LineWidth', 1, 'MarkerSize', 2)
-  
-  if ~snowPlus && ~perfectSnow
-    xline(sSPX, 'k');
-    plot(sdivX, qdiv_perpX, '-og', 'LineWidth', 1, 'MarkerSize', 2)
-  end
-  plot(s, qir, '-ok', 'LineWidth', 1, 'MarkerSize', 2)
-end
-
-   
-
-
 % ------------------
 % ANALYSIS OF PEAKS
 % ------------------
 
 % peaks from hf simulation
 %.........................
-pkthresh = max(1.5*median(qir), .025);
+pkthresh = .025;
 
 [qmaxI, qfwhpI, s_qmaxI, r_qmaxI, z_qmaxI, psi_qmaxI] = qpeak_info(...
     qdiv_perpI, sdivI, pkthresh, sLimTot, limdata, rg, zg, psizr);
@@ -643,8 +611,34 @@ sim = struct('s_qmax',s_qmax,'s_qirmax',s_qirmax,'r_qmax',r_qmax, ...
   'Apk_qirmaxN', Apk_qirmaxN, 'npeaks_q', npeaks_q, 'npeaks_qir', npeaks_qir);   
 
 
-
-
+% plot heat flux
+% ..............
+if plotit
+  
+  figure(2)
+  hold on
+  
+  xlabel('s [cm]')
+  ylabel('Heat Flux [MW/m^2]')
+  title([num2str(shot) ': ' num2str(time_ms) ' ms'])
+  
+  maxQ = max([qdiv_perpI; qdiv_perpX; qdiv_perpO]);
+  ylim(1.10*[0 maxQ])
+  
+  xline(sSPI, 'k');
+  xline(sSPO, 'k');
+  xline(s45Deg1, '--k');
+  xline(s45Deg2, '--k');
+  
+  plot(sdivI, qdiv_perpI, '-or', 'LineWidth', 1, 'MarkerSize', 2)
+  plot(sdivO, qdiv_perpO, '-ob', 'LineWidth', 1, 'MarkerSize', 2)
+  
+  if ~snowPlus && ~perfectSnow
+    xline(sSPX, 'k');
+    plot(sdivX, qdiv_perpX, '-og', 'LineWidth', 1, 'MarkerSize', 2)
+  end
+  plot(s, qir*nansum(qmax)/nansum(qirmax), '-ok', 'LineWidth', 1, 'MarkerSize', 2)
+end
 
 
 

@@ -1,7 +1,7 @@
 % -------
 % TESTING
 % -------
-clear; clc; close all;
+clear all; clc; close all;
 shot = 155328;
 runbatch = 1;
 
@@ -32,12 +32,7 @@ for iTime = 1:length(times)
   % GENERATE AND RUN BATCH JOBS
   % -----------------------------------
   
-  % 9 different initial conditions centered around xp
-  % drP = .05*[0 .86 -.86 0 .86 -.86 0 .86 -.86]';
-  % dzP = .05*[1 -.5 -.5 1 -.5 -.5 1 -.5 -.5]';
-  % drS = .05*[-.86 -.86 -.86 .86 .86 .86 0 0 0]';
-  % dzS = .05*[.5 .5 .5 .5 .5 .5 -1 -1 -1]';
-  % dxp = [drP drS dzP dzS];
+  % 2 different initial conditions centered around xp
   dxp = .03 * [0 -1 1 0; 0 1 -1 0];
   
   if runbatch
@@ -64,10 +59,31 @@ for iTime = 1:length(times)
       mkdir(jobdir);
       save([jobdir '/args.mat'], 'args');
       
-      % copy script to jobdir
+      % copy scripts to jobdir
+      % these scripts use persistent variables, so need local copies
+      % ............................................................
       jobscript = [root 'ml/train/sfd_fmincon_batch.m'];
       copyfile(jobscript, jobdir);
       
+      gs_scripts = {'gsdesign.p', 'gsupdate.p', 'gsevolve.p', 'gseq.p'};
+      
+      gs_dir = [root 'tools/gatools/gs/'];
+      
+      for k = 1:length(gs_scripts)
+        copyfile([gs_dir gs_scripts{k}], jobdir);
+      end
+      
+%       heatsim_script = [root 'ml/train/heatsim_ml.m'];
+%       designeq_script = [root 'ml/train/designeq_ml.m'];
+%       outfun_script = [root 'ml/train/outfun.m']; 
+%       costfun_script = [root 'ml/train/sfd_costfunction.m'];
+%       
+%       copyfile(heatsim_script, jobdir);
+%       copyfile(designeq_script, jobdir);
+%       copyfile(outfun_script, jobdir);
+%       copyfile(costfun_script, jobdir);
+      
+
       % cd and submit batch job
       cd(jobdir)
       system(['sbatch ' batchscript]);
