@@ -2,7 +2,11 @@
 % Designs a new eq, simulates heat flux, and evaluates cost function based
 % on comparison to IR heat flux.
 
-% xp = [1.12 1.2 -1.15 -1.3];
+
+% EFIT: xp = [1.1056 1.1603 -1.2072 -1.2597];
+% r_spd = [1.0160    1.0664    1.0664    1.3042];
+% z_spd = [-1.1078   -1.2745   -1.2745   -1.3630];
+
 
 function J = designeq_cost(xp)
 
@@ -58,9 +62,11 @@ spec.weights.cpasma = 1;
 %........................
 % x-pt prediction 
 
-spec.targets.rx = [rxP rxS];
-spec.targets.zx = [zxP zxS];
-spec.weights.x = [1 1] * 1e4;
+spec.locks.rx = [rxP rxS];
+spec.locks.zx = [zxP zxS];
+% spec.targets.rx = [rxP rxS];
+% spec.targets.zx = [zxP zxS];
+% spec.weights.x = [1 1] * 1e4;
 
 spec.targets.rbdef = rxP;
 spec.targets.zbdef = zxP;
