@@ -14,7 +14,7 @@ for k = 3:length(d)
 end
 
 
-% Read cost functio values
+% Read cost function values
 for iJob = 1:length(times)
 try
   time_ms = times(iJob);

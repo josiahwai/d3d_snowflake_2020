@@ -1,4 +1,10 @@
-function J = sfd_costfunction(xp,shot,time_ms)
+dum = load('args');
+
+root = '/u/jwai/d3d_snowflake_2020/current/';
+addpath(genpath(root));
+
+[shot,time_ms,rxP,rxS,zxP,zxS] = unpack(dum.args);
+xp = [rxP rxS zxP zxS];
 
 try 
 
@@ -16,6 +22,8 @@ end
   
 fprintf(['\nCost: ' num2str(J) '  XP: ' num2str(xp) '\n'])
 
+output = [J xp];
+save('output', 'output');
 
 
 

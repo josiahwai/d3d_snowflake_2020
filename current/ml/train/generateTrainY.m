@@ -2,13 +2,13 @@
 % TESTING
 % -------
 clear all; clc; close all;
-shot = 155328;
+shot = 155355;
 runbatch = 1;
 
 root = '/u/jwai/d3d_snowflake_2020/current/';
 addpath(genpath(root));
 
-efit_dir = [root 'inputs/eqs/efit01/' num2str(shot)];
+efit_dir = [root 'inputs/eqs/cake/' num2str(shot)];
 d = dir(efit_dir);
 times = [];
 for k = 3:length(d)
@@ -18,7 +18,7 @@ end
 % ----------------------
 % GENERATE TRAIN Y
 % ----------------------
-for iTime = 1:length(times)
+for iTime = 2:length(times)
   try
   time_ms = times(iTime);  
   
@@ -33,7 +33,7 @@ for iTime = 1:length(times)
   % -----------------------------------
   
   % 2 different initial conditions centered around xp
-  dxp = .03 * [0 -1 1 0; 0 1 -1 0];
+  dxp = .01 * [0 -1 1 0; 0 1 -1 0];
   
   if runbatch
     
@@ -50,7 +50,7 @@ for iTime = 1:length(times)
     
     
     
-    for iJob = 1:2
+    for iJob = 1:1
       % copy x-pt initial condition to jobdir
       xp0 = xp + dxp(iJob,:);
       args = [iJob shot time_ms xp0];
@@ -65,24 +65,13 @@ for iTime = 1:length(times)
       jobscript = [root 'ml/train/sfd_fmincon_batch.m'];
       copyfile(jobscript, jobdir);
       
-      gs_scripts = {'gsdesign.p', 'gsupdate.p', 'gsevolve.p', 'gseq.p'};
-      
-      gs_dir = [root 'tools/gatools/gs/'];
-      
-      for k = 1:length(gs_scripts)
-        copyfile([gs_dir gs_scripts{k}], jobdir);
-      end
-      
-%       heatsim_script = [root 'ml/train/heatsim_ml.m'];
-%       designeq_script = [root 'ml/train/designeq_ml.m'];
-%       outfun_script = [root 'ml/train/outfun.m']; 
-%       costfun_script = [root 'ml/train/sfd_costfunction.m'];
+%       gs_scripts = {'gsdesign.p', 'gsupdate.p', 'gsevolve.p', 'gseq.p'};
 %       
-%       copyfile(heatsim_script, jobdir);
-%       copyfile(designeq_script, jobdir);
-%       copyfile(outfun_script, jobdir);
-%       copyfile(costfun_script, jobdir);
-      
+%       gs_dir = [root 'tools/gatools/gs/'];
+%       
+%       for k = 1:length(gs_scripts)
+%         copyfile([gs_dir gs_scripts{k}], jobdir);
+%       end
 
       % cd and submit batch job
       cd(jobdir)

@@ -22,7 +22,7 @@ tokdata = 'd3d_obj_mks_struct_6565.mat';
 load([tokdir tokdata]);
 
 % Load the equilibrium
-eqdir = [root 'inputs/eqs/efit01/' num2str(shot)];
+eqdir = [root 'inputs/eqs/cake/' num2str(shot)];
 timerange = [time_ms+16 time_ms-16]/1000;
 init = read_eq(shot, timerange, eqdir);
 

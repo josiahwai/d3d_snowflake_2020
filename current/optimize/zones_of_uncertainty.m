@@ -5,14 +5,14 @@
 % USER/FUNCTION INPUTS
 % =======================
 clear; clc; close all;
-dpsi = .01;
+dpsi = .002;
 plotit = 1;
-saveit = 1;
+saveit = 0;
 runbatch = 0;
 
 np = 30;  % approximate number of sample x-pt locations
-shot = 165288;
-time_ms = 4200;
+shot = 155328;
+time_ms = 4000;
 cake_zones = 0;
 efit_zones = ~cake_zones;
 root = '/u/jwai/d3d_snowflake_2020/current/';
