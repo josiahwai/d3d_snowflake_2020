@@ -602,13 +602,22 @@ zx =          [zxPL   zxSL  ];
 psix =        [psixPL psixSL];
 npeaks_q   =  sum(~isnan(qmax));
 npeaks_qir =  sum(~isnan(qirmax));
+sir = s;
+qI = qdiv_perpI; 
+qX = qdiv_perpX;
+qO = qdiv_perpO;
+sI = sdivI;
+sX = sdivX;
+sO = sdivO;
 
 sim = struct('s_qmax',s_qmax,'s_qirmax',s_qirmax,'r_qmax',r_qmax, ...
   'r_qirmax',r_qirmax,'z_qmax',z_qmax,'z_qirmax',z_qirmax,'psi_qmax', ...
   psi_qmax, 'psi_qirmax',psi_qirmax,'qmax',qmax,'qirmax',qirmax,'rx',rx, ...
   'zx',zx,'psix', psix,'Apk_qmax', Apk_qmax, 'Apk_qirmax', Apk_qirmax, ...
   'qmaxN', qmaxN, 'qirmaxN', qirmaxN, 'Apk_qmaxN', Apk_qmaxN, ...
-  'Apk_qirmaxN', Apk_qirmaxN, 'npeaks_q', npeaks_q, 'npeaks_qir', npeaks_qir);   
+  'Apk_qirmaxN', Apk_qirmaxN, 'npeaks_q', npeaks_q, 'npeaks_qir', ...
+  npeaks_qir, 'sir', sir, 'qir', qir, 'qI',qI,'qX',qX,'qO',qO,'sI',sI,...
+  'sX',sX,'sO',sO);   
 
 
 % plot heat flux
