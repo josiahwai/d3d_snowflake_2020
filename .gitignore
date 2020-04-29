@@ -1,7 +1,7 @@
 *.mat
 *.fig
 *.eps
-g1*00
+g1*
 *.m~
 archive/*
 *.out
