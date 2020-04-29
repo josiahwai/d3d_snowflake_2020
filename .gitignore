@@ -1,2 +1,11 @@
-*/jobs/*
-*.p
+*.mat
+*.fig
+*.eps
+g1*00
+*.m~
+archive/*
+*.out
+*.err
+*.txt
+**/jobs/**
+**old/**
