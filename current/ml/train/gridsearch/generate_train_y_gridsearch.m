@@ -4,10 +4,10 @@ clear all; clc; close all; warning('off','all')
 % SETTINGS
 % ---------
 shot = 155355;
-time_ms = 3000;
-runbatch = 1;
-plotit = 0;
-smax = 0.11; % grid radius
+time_ms = 3900;
+runbatch = 0;
+plotit = 1;
+smax = 0.1; % grid radius
 ds = 0.03;   % grid spacing
 
 root = '/u/jwai/d3d_snowflake_2020/current/';
@@ -24,7 +24,7 @@ cake_eq = read_eq(shot, time_ms/1000, cake_dir);
 cake_snow = analyzeSnowflake(cake_eq);
 struct_to_ws(cake_eq.gdata);
 [psixpb, psixS0] = unpack([cake_snow.psixPL cake_snow.psixSL]);
-[rxpb,rxS0,zxpb,zxS0] = unpack([cake_snow.rx cake_snow.zx]);
+[rxP0,rxS0,zxP0,zxS0] = unpack([cake_snow.rx cake_snow.zx]);
 
 % circle around x-pts
 r=[]; z=[]; k=0;
@@ -36,7 +36,7 @@ end
   
 % sample x-pts
 ppa = 1/ds^2;
-[rxP,zxP] = polygrid(rxpb+r, zxpb+z,ppa);
+[rxP,zxP] = polygrid(rxP0+r, zxP0+z,ppa);
 [rxS,zxS] = polygrid(rxS0+r, zxS0+z,ppa);
 
 
@@ -46,8 +46,8 @@ psixP = bicubicHermite(rg,zg,psizr,rxP,zxP);
 
 dpsi = mean(abs([psixP - psixpb; psixS-psixS0]));
 
-k1 = abs(psixP-psixpb) < dpsi;
-k2 = abs(psixS-psixS0) < dpsi;
+k1 = abs(psixP-psixpb) < 1.5*dpsi;
+k2 = abs(psixS-psixS0) < 1.5*dpsi;
 rxP=rxP(k1); 
 zxP=zxP(k1);
 rxS=rxS(k2); 
@@ -112,7 +112,7 @@ for k = 1:length(xp_list)
   end
 end
 
-xp_list = xp_list(iUse,:);
+xp_list = [rxP0,rxS0,zxP0,zxS0; xp_list(iUse,:)];
 
 disp(['There are ' num2str(length(xp_list)) ' x-pt combos.'])
 

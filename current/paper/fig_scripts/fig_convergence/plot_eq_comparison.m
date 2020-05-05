@@ -2,7 +2,7 @@ close all;
 warning('off','all')
 shot = 165288;
 time_ms = 4200;
-saveit = 1;
+saveit = 0;
 
 root = '/u/jwai/d3d_snowflake_2020/current/';
 addpath(genpath(root));

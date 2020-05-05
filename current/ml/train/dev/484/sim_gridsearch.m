@@ -10,15 +10,14 @@ try
   eq = designeq_ml(xp,shot,time_ms);
   sim = heatsim_ml(eq,shot,time_ms);  
   J = measure_cost(sim);
-  save('sim','sim');
 catch
-  J = 100;
+  J = 10;
   fprintf('Warning: simulation did not run')
 end
   
 fprintf(['\nCost: ' num2str(J) '  XP: ' num2str(xp) '\n'])
 
-
+save('sim','sim');
 
 
 

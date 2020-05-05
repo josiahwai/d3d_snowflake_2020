@@ -28,7 +28,7 @@ load([tokdir tokdata]);
 
 % Load the equilibrium
 eqdir = [root 'inputs/eqs/cake/' num2str(shot)];
-timerange = [time_ms+16 time_ms-16]/1000;
+timerange = [time_ms+5 time_ms-5]/1000;
 init = read_eq(shot, timerange, eqdir);
 
 % config settings
@@ -40,7 +40,8 @@ config.plot_settings.SOL.n = 10;
 config.plot_settings.SOL.d = 1e-3;
 
 % Specify where the flux should equal the boundary flux
-[rbbbs,zbbbs] = deal(init.gdata.rbbbs, init.gdata.zbbbs);
+rbbbs = init.gdata.rbbbs;
+zbbbs = init.gdata.zbbbs;
 k = find(zbbbs > -0.65 | rbbbs > 1.85);
 spec.targets.rsep = rbbbs(k);
 spec.targets.zsep = zbbbs(k);
