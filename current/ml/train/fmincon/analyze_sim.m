@@ -74,11 +74,6 @@ for k = 1:nJobs
 end
 
 
-% sims_that_ran = boolean(sims_that_ran);
-% times(sims_that_ran)
-% times(~sims_that_ran)
-
-
 % ================
 % ANALYZE AND PLOT
 % ================
@@ -91,6 +86,8 @@ for k = sims_to_plot
   
   % simulate initial eq
   % ...................
+  close all
+  time_ms = times(k)
   
   % load 
   cake_dir = [root 'inputs/eqs/cake/' num2str(shot)];

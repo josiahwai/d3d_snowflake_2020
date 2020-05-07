@@ -521,7 +521,7 @@ end
 % IR-based data
 
 % Load heat flux data q(s,t), s=distance along limiter, and t=time
-qperp_dir  = [root 'inputs/qperp/' num2str(shot) '/'];
+qperp_dir  = [root 'inputs/qperp/'];
 qperp_data = ['qperp_' num2str(shot) '.mat'];
 
 load([qperp_dir qperp_data])  % loads q, s, and t
@@ -639,14 +639,20 @@ if plotit
   xline(s45Deg1, '--k');
   xline(s45Deg2, '--k');
   
-  plot(sdivI, qdiv_perpI, '-or', 'LineWidth', 1, 'MarkerSize', 2)
-  plot(sdivO, qdiv_perpO, '-ob', 'LineWidth', 1, 'MarkerSize', 2)
+%   plot(sdivI, qdiv_perpI, '-or', 'LineWidth', 1, 'MarkerSize', 2)
+%   plot(sdivO, qdiv_perpO, '-ob', 'LineWidth', 1, 'MarkerSize', 2)
+%   if ~snowPlus && ~perfectSnow
+%     xline(sSPX, 'k');
+%     plot(sdivX, qdiv_perpX, '-og', 'LineWidth', 1, 'MarkerSize', 2)
+%   end
   
-  if ~snowPlus && ~perfectSnow
-    xline(sSPX, 'k');
-    plot(sdivX, qdiv_perpX, '-og', 'LineWidth', 1, 'MarkerSize', 2)
-  end
-  plot(s, qir*nansum(qmax)/nansum(qirmax), '-ok', 'LineWidth', 1, 'MarkerSize', 2)
+  plot(s, qir/nansum(qirmax), '-ok', 'LineWidth', 1, 'MarkerSize', 2)
+
+  s = [sdivI sdivX sdivO];
+  q = [qdiv_perpI; qdiv_perpX; qdiv_perpO];
+  plot(s,q/sum(qmax), '-r', 'linewidth', 2)
+  set(gcf,'position',[431 504 577 188])
+  
 end
 
 
