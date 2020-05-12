@@ -90,20 +90,15 @@ end
 %.....................................................................
 % Calculate the locations of 3 sample points centered around snowflake
 
-alpha0   = pi/6;
-angleInc = (2*pi)/3;
+th_list = linspace(0,2*pi,4);
+rVec = [];
+zVec = [];
 
-r1 = rExp + rhoExp*cos(alpha0);
-z1 = zExp + rhoExp*sin(alpha0);
-
-r2 = rExp + rhoExp*cos(alpha0 + angleInc);
-z2 = zExp + rhoExp*sin(alpha0 + angleInc);
-
-r3 = rExp + rhoExp*cos(alpha0 + 2*angleInc);
-z3 = zExp + rhoExp*sin(alpha0 + 2*angleInc);
-
-rVec = [r1; r2; r3];
-zVec = [z1; z2; z3];
+for k = 1:length(th_list) - 1
+  th = th_list(k);
+  rVec(k) = rExp + rhoExp*cos(th);
+  zvec(k) = zExp + rhoExp*sin(th);
+end
 
 scatter(rVec,zVec,'filled');
 

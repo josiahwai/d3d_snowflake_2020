@@ -45,7 +45,7 @@ for k = 1:N
     sps = estimate_strike_pts(eqs{k}, sims{k}); 
     opts.constrain_sp = 1;
     opts.sp = sps;
-    eqs{k+1} = designeq_ml(xps{k}, shot, time_ms, eqs{k}, opts);
+    eqs{k+1} = designeq_ml(xp0, shot, time_ms, eqs{k}, opts);
     snf = analyzeSnowflake(eqs{k+1});
     xps{k+1} = [snf.rx snf.zx];                
   end

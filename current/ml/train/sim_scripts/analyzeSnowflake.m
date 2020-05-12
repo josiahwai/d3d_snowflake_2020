@@ -9,7 +9,7 @@ struct_to_ws(eq);
 % find snowflake
 [psizr, rg, zg] = regrid(rg, zg, psizr, 257, 257);
 [rguess,zguess] = isoflux_xpFinder(psizr,1.15,-1.25,rg,zg); 
-[rxP, zxP, rxS, zxS] = snowFinder(psizr, rguess, zguess, 0.1, rg, zg); 
+[rxP, zxP, rxS, zxS] = snowFinder(psizr, rguess, zguess, 0.05, rg, zg); 
 
 e = .05; 
 if rxP < min(rg) + e, rxP = min(rg) + e; end
