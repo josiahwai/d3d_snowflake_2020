@@ -11,10 +11,11 @@ struct_to_ws(eq);
 [rguess,zguess] = isoflux_xpFinder(psizr,1.15,-1.25,rg,zg); 
 [rxP, zxP, rxS, zxS] = snowFinder(psizr, rguess, zguess, 0.1, rg, zg); 
 
-if rxP < min(rg), rxP = min(rg) + .02; end
-if rxS < min(rg), rxS = min(rg) + .02; end
-if zxP < min(zg), zxP = min(zg) + .02; end
-if zxS < min(zg), zxS = min(zg) + .02; end
+e = .05; 
+if rxP < min(rg) + e, rxP = min(rg) + e; end
+if rxS < min(rg) + e, rxS = min(rg) + e; end
+if zxP < min(zg) + e, zxP = min(zg) + e; end
+if zxS < min(zg) + e, zxS = min(zg) + e; end
 
 % zoom in on snowflake x-pts
 [rxP, zxP, psixP] = isoflux_xpFinder(psizr, rxP, zxP, rg, zg);

@@ -62,10 +62,11 @@ psibry = eq.psibry;
 
 % find the snowflake
 [rxPL, zxPL, rxSL, zxSL] = snowFinder(psizr, r0, z0, 0.1, rg, zg); 
-if rxPL < min(rg), rxPL = min(rg) + .04; end
-if rxSL < min(rg), rxSL = min(rg) + .04; end
-if zxPL < min(zg), zxPL = min(zg) + .04; end
-if zxSL < min(zg), zxSL = min(zg) + .04; end
+e = .05; 
+if rxPL < min(rg) + e, rxPL = min(rg) + e; end
+if rxSL < min(rg) + e, rxSL = min(rg) + e; end
+if zxPL < min(zg) + e, zxPL = min(zg) + e; end
+if zxSL < min(zg) + e, zxSL = min(zg) + e; end
 
 % zoom in on snowflake x-pts
 [rxPL, zxPL, psixPL] = isoflux_xpFinder(psizr, rxPL, zxPL, rg, zg);
@@ -311,7 +312,7 @@ rentrX = rzLine(:,1);
 zentrX = rzLine(:,2);
 
 % x-points are so close the psi-spacing is negligible ==> perfect snowflake
-if length(rentrX) < 1
+if length(rentrX) < 3
     perfectSnow = true;  
 else
     perfectSnow = false;
@@ -650,7 +651,7 @@ if plotit
 
   s = [sdivI sdivX sdivO];
   q = [qdiv_perpI; qdiv_perpX; qdiv_perpO];
-  plot(s,q/sum(qmax), '-r', 'linewidth', 2)
+  plot(s,q/nansum(qmax), '-r', 'linewidth', 2)
   set(gcf,'position',[431 504 577 188])
   
 end

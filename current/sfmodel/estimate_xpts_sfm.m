@@ -1,5 +1,8 @@
 function xp1 = estimate_xpts(eq0,sim0,plotit)
   
+c_relax = 0.3;  % relaxation constant on the step sizes
+
+
 if ~exist('plotit','var'), plotit = 0; end
 if plotit, figure(800); clf; hold on; end
 
@@ -32,6 +35,8 @@ psidum = bicubicHermite(rg,zg,psizr,rdum,zdum);
 [~,k] = min(abs(psidum - psixP0));
 
 dxpP1 = [rdum(k) - rxP0; zdum(k) - zxP0];
+if dxpP1'*res < 0, dxpP1 = -dxpP1; end  % vector was pointed wrong direction
+
 
 % Correction due to SP2 mismatch
 % ..............................
@@ -46,7 +51,7 @@ u = [dpsidr dpsidz]' / norm([dpsidr dpsidz]);
 dxpP2 = norm(res)*u;
 if sign(dxpP2(1)) ~= sign(res(1)), dxpP2 = -dxpP2; end
 
-dxpP = dxpP1 + dxpP2; 
+dxpP = c_relax * (dxpP1 + dxpP2); 
 
 rxP1 = rxP0 + dxpP(1);
 zxP1 = zxP0 + dxpP(2);
@@ -106,11 +111,11 @@ k = find(sign(dpsi_abcd) == sign(dpsixS) & sign(dr_abcd) == sign(dr_sp3));
 
 abcd_vec = abcd(k,:)';  % direction to move xpt
 
-c_relax = 0.3;
-dxp_hfsplit = c_relax * 0.5 * dpsixS / dpsi_abcd(k) * dl * abcd_vec;
+dxp_hfsplit = c_relax * dpsixS / dpsi_abcd(k) / 3 * dl * abcd_vec;
 
-s = dxp_hfsplit;
-plot(rxS0 + [0 s(1)], zxS0 + [0 s(2)],'g','linewidth',2)
+if plotit
+  plot(rxS0 + [0 dxp_hfsplit(1)], zxS0 + [0 dxp_hfsplit(2)],'g','linewidth',2)
+end
 
 % ========================================
 % Secondary x-pt correction: SP3 mismatch 
@@ -121,55 +126,28 @@ plot(rxS0 + [0 s(1)], zxS0 + [0 s(2)],'g','linewidth',2)
 [~,dpsidr,dpsidz] = bicubicHermite(rg,zg,psizr,r_qmax(3),z_qmax(3));
 u = [dpsidr dpsidz]' / norm([dpsidr dpsidz]);
 v = [r_qirmax(3) - r_qmax(3); z_qirmax(3) - z_qmax(3)];
-r1 = c_relax * u*u'*v;
+r1 = c_relax * u*u'*v;  % orthogonal projection of error at strike pt
 
-plot(r_qmax(3) + [0 r1(1)], z_qmax(3) + [0 r1(2)], 'b','linewidth',2)
-
-% option 1
-
-% r = r1;
-% rhat = r/norm(r);
-% s = dxp_hfsplit;
-% dxp_total = s + rhat * (r-s)'*rhat;
-%
-% plot(rxS0 + [0 r1(1)], zxS0 + [0 r1(2)], 'b','linewidth',2)
-% dx = s'*rhat * rhat;
-% plot(rxS0 + [0 dx(1)], zxS0 + [0 dx(2)], 'r','linewidth',2)
+if plotit
+  plot(r_qmax(3) + [0 r1(1)], z_qmax(3) + [0 r1(2)], 'b','linewidth',2)
+end
 
 
-% option 2
-
+% which direction to project r1
 [~,k] = max(abs(nesw*r1));
 nesw_vec = nesw(k,:)';
-r2 = norm(r1) * sign(nesw_vec'*r1) * nesw_vec;
-r = r2;
-rhat = r/norm(r);
-s = dxp_hfsplit;
-dxp_total = s + rhat * (r-s)'*rhat;
 
-plot(rxS0 + [0 r2(1)], zxS0 + [0 r2(2)], 'b','linewidth',2)
-dx = s'*rhat * rhat;
-plot(rxS0 + [0 dx(1)], zxS0 + [0 dx(2)], 'r','linewidth',2)
+% orthogonal projection of error at x-pt
+r2 = norm(r1) * sign(nesw_vec'*r1) * nesw_vec;  
+rhat = r2/norm(r2);
+dxp_total = dxp_hfsplit + rhat * (r2-dxp_hfsplit)'*rhat;
 
-
-
-
-
-% option 3
-
-% find nesw vector most aligned with r1:=residual (should be n/s)
-% [~,k] = max(abs(nesw*r1));
-% nesw_vec = nesw(k,:)';
-% r2 = norm(r1) * sign(nesw_vec'*r1) * nesw_vec;
-% r2hat_perp = [r2(2) -r2(1)]' / norm(r2); % unit vector perp to r2
-% s = dxp_hfsplit;
-% w = s'*(s-r2) / (s'*r2hat_perp) * r2hat_perp;
-% dxp_total = r2 + w;
-
+if plotit
+  plot(rxS0 + [0 r2(1)], zxS0 + [0 r2(2)], 'b','linewidth',2)
+end
 
 rxS1 = rxS0 + dxp_total(1);
 zxS1 = zxS0 + dxp_total(2);
-
 
 if plotit
   figure(800)
