@@ -13,8 +13,12 @@ for k = 1:N
   scatter(rx,zx,'filled', 'markerfacecolor', c(floor(k/N*length(c)),:))
 end
 
-for k = 1:N
-  plotsim(sims{k})
-  title(num2str(k))  
-%   pause
-end
+plotsim(sims{1})
+plotsim(sims{end})
+
+% for k = 1:N
+%   plotsim(sims{k})
+%   title(num2str(k))  
+% %   pause
+% end
+

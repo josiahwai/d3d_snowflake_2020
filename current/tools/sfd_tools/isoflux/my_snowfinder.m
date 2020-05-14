@@ -39,7 +39,7 @@ rxzx = uniquetol([rx(iuse)' zx(iuse)'], .005, 'ByRows',true);
 [~,k] = mink(psix_r.^2 + psix_z.^2, 2); % take the best 2, if there's > 2
 
 % reorder primary, secondary x-pts if necessary
-if abs(psix(2)-psibry) < abs(psix(1)-psibry), k = flip(k); end
+if abs(psix(k(2))-psibry) < abs(psix(k(1))-psibry), k = flip(k); end
 
 [psixP, psixS] = unpack(psix(k));
 [rxP, rxS] = unpack(rxzx(k,1));

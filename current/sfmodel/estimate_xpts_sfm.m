@@ -1,4 +1,4 @@
-function xp1 = estimate_xpts(eq0,sim0,plotit)
+function xp1 = estimate_xpts_sfm(eq0,sim0,plotit)
   
 c_relax = 0.3;  % relaxation constant on the step sizes
 
@@ -107,7 +107,11 @@ dpsi_abcd = bicubicHermite(rg,zg,psizr,rxS0 + dl*abcd(:,1), zxS0 + dl*abcd(:,2))
 dr_abcd = dl*abcd(:,1);
 dr_sp3 = r_qirmax(3) - r_qmax(3);
 
-k = find(sign(dpsi_abcd) == sign(dpsixS) & sign(dr_abcd) == sign(dr_sp3));
+if abs(dr_sp3) > .02  
+  k = find(sign(dpsi_abcd) == sign(dpsixS) & sign(dr_abcd) == sign(dr_sp3));
+else
+  k = find(sign(dpsi_abcd) == sign(dpsixS) & sign(dr_abcd) == sign(drsplit_mid));
+end
 
 abcd_vec = abcd(k,:)';  % direction to move xpt
 

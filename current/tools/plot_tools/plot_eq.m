@@ -15,14 +15,7 @@ rg = eq.rg';
 zg = eq.zg;
 [psizr, rg, zg] = regrid(rg, zg, psizr, 257, 257);
 
-rExp   =  1.1500;
-zExp   = -1.2500;
-rhoExp =  0.1000;
-
-[rxPL, zxPL, rxSL, zxSL] = snowFinder(psizr, rExp, zExp, rhoExp, rg, zg);
-
-[rxPL, zxPL, psixPL] = isoflux_xpFinder(psizr, rxPL, zxPL, rg, zg);
-[rxSL, zxSL, psixSL] = isoflux_xpFinder(psizr, rxSL, zxSL, rg, zg);
+[~,~,~,~, psixPL, psixSL] = my_snowfinder(rg, zg, psizr, eq.psibry);
 
 plot(limdata(2,:), limdata(1,:), 'Color', [0.5 0.5 0.5], 'LineWidth', 3)
 hold on

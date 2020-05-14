@@ -8,24 +8,7 @@ struct_to_ws(eq);
 
 % find snowflake
 [psizr, rg, zg] = regrid(rg, zg, psizr, 257, 257);
-[rguess,zguess] = isoflux_xpFinder(psizr,1.15,-1.25,rg,zg); 
-[rxP, zxP, rxS, zxS] = snowFinder(psizr, rguess, zguess, 0.05, rg, zg); 
-
-e = .05; 
-if rxP < min(rg) + e, rxP = min(rg) + e; end
-if rxS < min(rg) + e, rxS = min(rg) + e; end
-if zxP < min(zg) + e, zxP = min(zg) + e; end
-if zxS < min(zg) + e, zxS = min(zg) + e; end
-
-% zoom in on snowflake x-pts
-[rxP, zxP, psixP] = isoflux_xpFinder(psizr, rxP, zxP, rg, zg);
-[rxS, zxS, psixS] = isoflux_xpFinder(psizr, rxS, zxS, rg, zg);
-
-if abs(psixS - psibry) < abs(psixP - psibry)
-    swap(psixP, psixS);
-    swap(rxP, rxS);
-    swap(zxP, zxS);   
-end
+[rxP, rxS, zxP, zxS, psixP, psixS] = my_snowfinder(rg, zg, psizr, psibry);
 
 snowPlus=0; snowMinLFS=0; snowMinHFS=0;
 if psixS > psixP

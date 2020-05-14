@@ -5,9 +5,9 @@ clear all; clc; close all;
 % ========
 shot = 155354;
 runbatch = 1;
-sim_sfm = 0;      % simulate times where IR predicts snowflake minus
-sim_sfp = 1;      % simulate times where IR predicts snowflake plus
-constrain_sp = 1; % for sfp only, constrain via strike pt instead of x-pt
+sim_sfm = 1;      % simulate times where IR predicts snowflake minus
+sim_sfp = 0;      % simulate times where IR predicts snowflake plus
+constrain_sp = 0; % for sfp only, constrain via strike pt instead of x-pt
 
 root = '/u/jwai/d3d_snowflake_2020/current/';
 addpath(genpath(root));
@@ -51,11 +51,15 @@ for iTime = 1:length(t_sim)
   time_ms = t_sim(iTime);      
   
   batchscript_fn = [root 'sfmodel/sfmodel.sbatch'];   
-  if constrain_sp    
-    jobdir = [root 'sfmodel/jobs/' num2str(shot) '_constrain_sp/' num2str(time_ms) '/'];
-  else
-    jobdir = [root 'sfmodel/jobs/' num2str(shot) '/' num2str(time_ms) '/'];
+  if sim_sfm  
+    jobdir = [root 'sfmodel/jobs/' num2str(shot) '_sfm/' num2str(time_ms) '/'];
+  elseif sim_sfp && constrain_sp
+    jobdir = [root 'sfmodel/jobs/' num2str(shot) '_sfp_constrain_sp/' num2str(time_ms) '/'];    
+  elseif sim_sfp && ~constrain_sp
+    jobdir = [root 'sfmodel/jobs/' num2str(shot) '_sfp/' num2str(time_ms) '/'];
   end
+  
+  
   if exist(jobdir,'dir'), rmdir(jobdir,'s'); end
   mkdir(jobdir)
   

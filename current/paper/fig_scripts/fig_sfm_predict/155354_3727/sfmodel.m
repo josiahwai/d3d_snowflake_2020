@@ -10,31 +10,41 @@ dum = load('args');
 % ============
 
 % load and simulate
-cake_dir = [root 'inputs/eqs/cake/' num2str(shot)];
-eq0 = read_eq(shot, time_ms/1000, cake_dir);
+efit_dir = '/p/omfit/users/jwai/projects/155354_efits/EFITtime/OUTPUTS/gEQDSK';
 
-snow0 = analyzeSnowflake(eq0);
-xp0 = [snow0.rx snow0.zx];
-sfp = snow0.snowPlus;
-sfm = ~sfp;
-eq0 = designeq_ml(xp0,shot,time_ms);
-sim0 = heatsim_ml(eq0,shot,time_ms);
+efit_eq1 = read_eq(shot, time_ms/1000, efit_dir);
+efit_sim1 = heatsim_ml(efit_eq1.gdata,shot,time_ms);
+efit_snow1 = analyzeSnowflake(efit_eq1);
+efit_xp1 = [efit_snow1.rx efit_snow1.zx];
 
+efit_xp2 = efit_xp1;
+efit_eq2 = designeq_ml(efit_xp2,shot,time_ms);
+efit_sim2 = heatsim_ml(efit_eq2,shot,time_ms);
+
+  
+  
 % =========================
 % Find new x-pts & simulate
 % =========================
 N = 10;
 
-eqs{1}  = eq0;
-sims{1} = sim0;
-xps{1}  = xp0;
+eqs = {efit_eq1, efit_eq2};
+sims = {efit_sim1, efit_sim2};
+xps  = {efit_xp1, efit_xp2};
+
+sfm = 1;
+sfp = 0;
 
 
-for k = 1:N
+for k = 2:N
   fprintf(['\nIteration ' num2str(k) ' of ' num2str(N)])
   
   if sfm
-    xps{k+1}  = estimate_xpts_sfm(eqs{k}, sims{k});
+    try
+      xps{k+1}  = estimate_xpts_sfm(eqs{k}, sims{k});
+    catch
+      xps{k+1} = xps{k} + [-.005 .005 0 0];
+    end
     eqs{k+1}  = designeq_ml(xps{k+1}, shot, time_ms, eqs{k});
     
   elseif sfp && ~constrain_sp
@@ -45,15 +55,13 @@ for k = 1:N
     sps = estimate_strike_pts(eqs{k}, sims{k}); 
     opts.constrain_sp = 1;
     opts.sp = sps;
-    eqs{k+1} = designeq_ml(xp0, shot, time_ms, eqs{k}, opts);
+    eqs{k+1} = designeq_ml(cake_xp, shot, time_ms, eqs{k}, opts);
     snf = analyzeSnowflake(eqs{k+1});
     xps{k+1} = [snf.rx snf.zx];                
   end
   
   sims{k+1} = heatsim_ml(eqs{k+1},shot,time_ms); 
 end
-
-eqs = {eqs{1}, eqs{end}};
 
 save('xps','xps')
 save('eqs','eqs')

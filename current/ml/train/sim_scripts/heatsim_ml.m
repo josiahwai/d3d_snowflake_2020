@@ -57,26 +57,7 @@ psibry = eq.psibry;
 % Locate the snowflake in the lower divertor
 % ..........................................
 
-% get a good initial guess
-[r0,z0] = isoflux_xpFinder(psizr,1.15,-1.25,rg,zg); 
-
-% find the snowflake
-[rxPL, zxPL, rxSL, zxSL] = snowFinder(psizr, r0, z0, 0.1, rg, zg); 
-e = .05; 
-if rxPL < min(rg) + e, rxPL = min(rg) + e; end
-if rxSL < min(rg) + e, rxSL = min(rg) + e; end
-if zxPL < min(zg) + e, zxPL = min(zg) + e; end
-if zxSL < min(zg) + e, zxSL = min(zg) + e; end
-
-% zoom in on snowflake x-pts
-[rxPL, zxPL, psixPL] = isoflux_xpFinder(psizr, rxPL, zxPL, rg, zg);
-[rxSL, zxSL, psixSL] = isoflux_xpFinder(psizr, rxSL, zxSL, rg, zg);
-
-if abs(psixSL - psibry) < abs(psixPL - psibry)
-    swap(psixPL, psixSL);
-    swap(rxPL, rxSL);
-    swap(zxPL, zxSL);   
-end
+[rxPL, rxSL, zxPL, zxSL, psixPL, psixSL] = my_snowfinder(rg, zg, psizr, psibry);
     
 % determine the snowflake type
 snowPlus = false;
@@ -304,7 +285,7 @@ rzLine = zeros(length(idxInner),2);
 
 for ii = idxInner
     rzLine(ii,:) = isoflux_cpFinder(psizr, psiSOL(ii), rg, zg,...
-        [rxPL rxSL zxPL zxSL]);
+        [rxPL rxSL zxPL zxSL]*1.01);
 end
 
 psiperpX = psiSOL(idxInner);
