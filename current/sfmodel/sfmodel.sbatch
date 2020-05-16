@@ -2,7 +2,7 @@
 
 #SBATCH -n 1
 #SBATCH -p general
-#SBATCH -t 06:00:00
+#SBATCH -t 10:00:00
 #SBATCH -J sfmodel
 #SBATCH --mem=4000
 #SBATCH -o %j.out

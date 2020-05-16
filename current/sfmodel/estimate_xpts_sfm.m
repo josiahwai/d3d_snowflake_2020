@@ -1,7 +1,8 @@
 function xp1 = estimate_xpts_sfm(eq0,sim0,plotit)
-  
-c_relax = 0.3;  % relaxation constant on the step sizes
 
+c_relaxP = 0.8;
+c_relaxS = 0.3;  % relaxation constant on the step sizes
+thresh = .005;   % don't relax step sizes if under .5 cm
 
 if ~exist('plotit','var'), plotit = 0; end
 if plotit, figure(800); clf; hold on; end
@@ -9,9 +10,14 @@ if plotit, figure(800); clf; hold on; end
 struct_to_ws(eq0); clear xlim ylim
 struct_to_ws(sim0);
 
-[zxP0, zxS0] = unpack(zx);
-[rxP0, rxS0] = unpack(rx);
-[psixP0, psixS0] = unpack(psix);
+snow0 = analyzeSnowflake(eq0);
+[rxP0, rxS0] = unpack(snow0.rx);
+[zxP0, zxS0] = unpack(snow0.zx);
+rSPP = snow0.rSPP;
+zSPP = snow0.zSPP;
+psixP0 = bicubicHermite(rg,zg,psizr,rxP0,zxP0);
+psixS0 = bicubicHermite(rg,zg,psizr,rxS0,zxS0);
+
 
 % ===================================
 % Estimate position of  primary x-pt 
@@ -21,7 +27,7 @@ struct_to_ws(sim0);
 % ...............................
 
 % orthogonal projection of strike point error onto flux surfaces
-[~,dpsidr,dpsidz] = bicubicHermite(rg,zg,psizr,r_qmax(1),z_qmax(1));
+[~,dpsidr,dpsidz] = bicubicHermite(rg,zg,psizr,rSPP(1), zSPP(1));
 u = [dpsidr dpsidz]' / norm([dpsidr dpsidz]);
 v = [r_qirmax(1) - r_qmax(1); z_qirmax(1) - z_qmax(1)];
 res = u*u'*v;
@@ -40,22 +46,18 @@ if dxpP1'*res < 0, dxpP1 = -dxpP1; end  % vector was pointed wrong direction
 
 % Correction due to SP2 mismatch
 % ..............................
-[~,dpsidr,dpsidz] = bicubicHermite(rg,zg,psizr,r_qmax(2),z_qmax(2));
+[~,dpsidr,dpsidz] = bicubicHermite(rg,zg,psizr,rSPP(2),zSPP(2));
 u = [dpsidr dpsidz]' / norm([dpsidr dpsidz]);
 v = [r_qirmax(2) - r_qmax(2); z_qirmax(2) - z_qmax(2)];
 res = u*u'*v;
 
 % project a distance |res| orthogonal to previous step
-[~,dpsidr,dpsidz] = bicubicHermite(rg,zg,psizr,rxP0+dxpP1(1), zxP0+dxpP1(2));
+[~,dpsidr,dpsidz] = bicubicHermite(rg,zg,psizr,rxP0, zxP0+.02);
 u = [dpsidr dpsidz]' / norm([dpsidr dpsidz]);
 dxpP2 = norm(res)*u;
 if sign(dxpP2(1)) ~= sign(res(1)), dxpP2 = -dxpP2; end
 
-dxpP = c_relax * (dxpP1 + dxpP2); 
-
-rxP1 = rxP0 + dxpP(1);
-zxP1 = zxP0 + dxpP(2);
-
+dxpP = dxpP1 + dxpP2;
 
 % ==============================================
 % Secondary x-pt correction: heat flux splitting 
@@ -93,32 +95,11 @@ else
   warning('trouble finding nesw')
 end
 
-% find abcd vectors
-q = [nesw(end,:); nesw];
-abcd = nesw - diff(q) / 2;
-abcd = normalize(abcd,2,'norm');
-
-
-% Determine which vector direction (a,b,c or d)  to move the secondary x-pt
-% based on: 1) does the heat flux peak need to move in or out, 2) does x-pt
-% need to move to higher or lower psi to match heat flux split
-
-dpsi_abcd = bicubicHermite(rg,zg,psizr,rxS0 + dl*abcd(:,1), zxS0 + dl*abcd(:,2)) - psixS0;
-dr_abcd = dl*abcd(:,1);
-dr_sp3 = r_qirmax(3) - r_qmax(3);
-
-if abs(dr_sp3) > .02  
-  k = find(sign(dpsi_abcd) == sign(dpsixS) & sign(dr_abcd) == sign(dr_sp3));
-else
-  k = find(sign(dpsi_abcd) == sign(dpsixS) & sign(dr_abcd) == sign(drsplit_mid));
-end
-
-abcd_vec = abcd(k,:)';  % direction to move xpt
-
-dxp_hfsplit = c_relax * dpsixS / dpsi_abcd(k) / 3 * dl * abcd_vec;
+fexp = 20;
+dxp_split = fexp * drsplit_mid * nesw(2,:)';
 
 if plotit
-  plot(rxS0 + [0 dxp_hfsplit(1)], zxS0 + [0 dxp_hfsplit(2)],'g','linewidth',2)
+  plot(rxS0 + [0 dxp_split(1)], zxS0 + [0 dxp_split(2)],'g','linewidth',2)
 end
 
 % ========================================
@@ -127,35 +108,46 @@ end
 
 % SP3 mismatch projection
 % ...............................
-[~,dpsidr,dpsidz] = bicubicHermite(rg,zg,psizr,r_qmax(3),z_qmax(3));
+[~,dpsidr,dpsidz] = bicubicHermite(rg,zg,psizr,r_qmax(3)-.04,z_qmax(3));
 u = [dpsidr dpsidz]' / norm([dpsidr dpsidz]);
 v = [r_qirmax(3) - r_qmax(3); z_qirmax(3) - z_qmax(3)];
-r1 = c_relax * u*u'*v;  % orthogonal projection of error at strike pt
+r1 = u*u'*v;  % orthogonal projection of error at strike pt
 
 if plotit
   plot(r_qmax(3) + [0 r1(1)], z_qmax(3) + [0 r1(2)], 'b','linewidth',2)
 end
 
-
-% which direction to project r1
-[~,k] = max(abs(nesw*r1));
-nesw_vec = nesw(k,:)';
-
-% orthogonal projection of error at x-pt
-r2 = norm(r1) * sign(nesw_vec'*r1) * nesw_vec;  
-rhat = r2/norm(r2);
-dxp_total = dxp_hfsplit + rhat * (r2-dxp_hfsplit)'*rhat;
+n = nesw(1,:)';
+r2 = sign(r1'*n) * norm(r1) * n;
+dxpS = dxp_split + r2;
 
 if plotit
   plot(rxS0 + [0 r2(1)], zxS0 + [0 r2(2)], 'b','linewidth',2)
 end
 
-rxS1 = rxS0 + dxp_total(1);
-zxS1 = zxS0 + dxp_total(2);
+
+
+% relaxation of the step sizes
+if c_relaxS * norm(dxpS) > thresh
+  dxpS = c_relaxS*dxpS;
+elseif norm(dxpS) > thresh
+  dxpS = thresh / norm(dxpS) * dxpS;
+end
+
+if c_relaxP * norm(dxpP) > thresh
+  dxpP = c_relaxP*dxpP;
+elseif norm(dxpP) > thresh
+  dxpP = .005 / norm(dxpP) * dxpP;
+end
+
+rxP1 = rxP0 + dxpP(1);
+zxP1 = zxP0 + dxpP(2);
+rxS1 = rxS0 + dxpS(1);
+zxS1 = zxS0 + dxpS(2);
 
 if plotit
   figure(800)
-  plot_eq(eq0)
+  plot_eq(eq0,800)
   axis([1 1.5 -1.4 -.9])
   scatter(rxP1,zxP1,'b','filled')
   scatter(rxS1,zxS1,'b','filled')
@@ -167,8 +159,11 @@ xp1 = [rxP1 rxS1 zxP1 zxS1];
 
 
 
-
-
+% x = linspace(1, 1.35, 10);
+% y = linspace(-1.45, -1.25, 10);
+% [x,y] = meshgrid(x,y);
+% f = calc_fluxexp(eqs{1},x,y);
+% mean(mean(f))
 
 
 

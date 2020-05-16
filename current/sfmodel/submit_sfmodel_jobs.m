@@ -3,10 +3,10 @@ clear all; clc; close all;
 % ========
 % SETTINGS
 % ========
-shot = 155354;
+shot = 155328;
 runbatch = 1;
-sim_sfm = 1;      % simulate times where IR predicts snowflake minus
-sim_sfp = 0;      % simulate times where IR predicts snowflake plus
+sim_sfm = 0;      % simulate times where IR predicts snowflake minus
+sim_sfp = 1;      % simulate times where IR predicts snowflake plus
 constrain_sp = 0; % for sfp only, constrain via strike pt instead of x-pt
 
 root = '/u/jwai/d3d_snowflake_2020/current/';
@@ -34,8 +34,8 @@ qperp_data = ['qperp_' num2str(shot) '.mat'];
 load([qperp_dir qperp_data])  % loads q, s, and t
 
 t_ir = [];
-if sim_sfm, t_ir = [t_ir; t_3pks]; end
-if sim_sfp, t_ir = [t_ir; t_2pks]; end
+if sim_sfm, t_ir = [t_ir t_3pks(1:20)]; end
+if sim_sfp, t_ir = [t_ir t_2pks(1:20)]; end
 
 
 [dt,k] = min(abs(t_cake - t_ir));  

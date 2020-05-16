@@ -12,7 +12,7 @@ plot(sir,qir,'k','linewidth',1.5)
 s = [sI sX sO];
 q = [qI; qX; qO];
 q = q / nansum(qmax);  % renormalize
-plot(s, q, 'r', 'linewidth', 1.5)
+plot(s, q, 'linewidth', 1.5)
 
 axis([0.8 1.8 0 1.05*max(qirmax)/nansum(qirmax)])
 

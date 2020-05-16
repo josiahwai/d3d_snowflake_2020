@@ -1,4 +1,3 @@
-% ADD INFO PLEASE
 
 % qdiv_perp: perpendicular heat flux at the strike pt from solving diffusion equation
 % sDiv_SP: distance along limiter to heat flux level
@@ -30,7 +29,7 @@ for ii = 1:nRegion-1
             
             int = (qentr_par/alpha)*exp(-dpsiDiv.^2/(4*chi*t));
             
-            qdiv_par(jj) = qdiv_par(jj) - trapz(abs(psiDivFine), int);
+            qdiv_par(jj) = qdiv_par(jj) - trapz(psiDivFine, int);
             
         end
     end
