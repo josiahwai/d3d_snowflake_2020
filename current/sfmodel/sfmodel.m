@@ -1,4 +1,5 @@
-clear all; clc; close all;
+clear all; clc; close all; warning('off','all');
+
 root = '/u/jwai/d3d_snowflake_2020/current/';
 addpath(genpath(root));
 
@@ -34,7 +35,7 @@ for k = 1:N
   fprintf(['\nIteration ' num2str(k) ' of ' num2str(N)])
   
   if sfm
-    xps{k+1}  = estimate_xpts_sfm(eqs{k}, sims{k});
+    xps{k+1}  = estimate_xpts_sfm(eqs{k}, sims{k}, shot, time_ms);
     eqs{k+1}  = designeq_ml(xps{k+1}, shot, time_ms, eqs{k});
     
   elseif sfp && ~constrain_sp
@@ -50,7 +51,8 @@ for k = 1:N
     xps{k+1} = [snf.rx snf.zx];                
   end
   
-  sims{k+1} = heatsim_ml(eqs{k+1},shot,time_ms); 
+  sims{k+1} = heatsim_fit(eqs{k+1}, shot, time_ms, .006, .0025, .2, .2);
+
 end
 
 eqs = {eqs{1}, eqs{end}};

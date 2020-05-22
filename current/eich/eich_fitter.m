@@ -54,7 +54,7 @@ options.StartPoint = [max(qperp(io)) 1 1 fexpo 160 4];
 options.Lower = [0 0 0 fexpo 0 0];  % lock flux expansion
 options.Upper = [inf inf inf fexpo inf inf];
     
-fito = fit(s_nogap(io), qperp(io), ft, options);
+[fito, gofo] = fit(s_nogap(io), qperp(io), ft, options);
 sspo =  fito.s0;
 
 
@@ -80,7 +80,7 @@ options.StartPoint = [max(qperp(ii)) 1 1 fexpi 100];
 options.Lower = [0 0 0 fexpi 0];
 options.Upper = [inf inf inf fexpi inf];
 
-fiti = fit(s(ii), qperp(ii), ft, options);
+[fiti, gofi] = fit(s(ii), qperp(ii), ft, options);
 sspi =  fiti.s0;
 
 % convert strike points from s to (r,z)
@@ -121,12 +121,16 @@ qpks = [max(qperp(ii)) qpkx max(qperp(io))];
 
 
 eichfit = struct('rsp', rsp, 'zsp', zsp, 'ssp', ssp, 'chi_i', chi_i, ...
-  'chi_o', chi_o, 'qpks', qpks, 'fiti', fiti, 'fito', fito);
+  'chi_o', chi_o, 'qpks', qpks, 'fiti', fiti, 'fito', fito, 'gofi', ...
+  gofi, 'gofo', gofo);
 
 if plotit
-  figure
+  figure(19)
+  clf
   hold on
-  plot(s,qperp)
+  plot(s,qperp,'.k')
+  plot(s, fiti(s),'r','linewidth', 1.5)
+  plot(s, fito(s), 'g', 'linewidth', 1.5)
   xline(sspi);
   if ~isnan(sspx), xline(sspx); end
   xline(sspo);

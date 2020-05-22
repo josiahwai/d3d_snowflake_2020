@@ -1,4 +1,4 @@
-function plot_sim(sim)
+function plotsim(sim)
 
 figure(27)
 % clf
@@ -14,7 +14,7 @@ q = [qI; qX; qO];
 q = q / nansum(qmax);  % renormalize
 plot(s, q, 'linewidth', 1.5)
 
-axis([0.8 1.8 0 1.05*max(qirmax)/nansum(qirmax)])
+axis([0.8 1.8 0 1.05*max(qmax)/nansum(qmax)])
 
 set(gcf,'position', [718 -93 535 190])
 end

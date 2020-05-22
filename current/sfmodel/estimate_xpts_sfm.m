@@ -1,22 +1,39 @@
-function xp1 = estimate_xpts_sfm(eq0,sim0,plotit)
+function xp1 = estimate_xpts_sfm(eq0, sim0, shot, time_ms, plotit)
 
 c_relaxP = 0.8;
 c_relaxS = 0.3;  % relaxation constant on the step sizes
 thresh = .005;   % don't relax step sizes if under .5 cm
 
+root = '/u/jwai/d3d_snowflake_2020/current/';
 if ~exist('plotit','var'), plotit = 0; end
 if plotit, figure(800); clf; hold on; end
 
 struct_to_ws(eq0); clear xlim ylim
-struct_to_ws(sim0);
 
 snow0 = analyzeSnowflake(eq0);
 [rxP0, rxS0] = unpack(snow0.rx);
 [zxP0, zxS0] = unpack(snow0.zx);
-rSPP = snow0.rSPP;
+rSPP = snow0.rSPP; % primary strike points
 zSPP = snow0.zSPP;
+rSPS = snow0.rSPS; % secondary strike points
+zSPS = snow0.zSPS;
 psixP0 = bicubicHermite(rg,zg,psizr,rxP0,zxP0);
 psixS0 = bicubicHermite(rg,zg,psizr,rxS0,zxS0);
+
+% ==================
+% Analyze Heat Flux
+% ==================
+load('d3d_obj_mks_struct_6565.mat')
+
+% Load heat flux data q(s,t), s=distance along limiter, and t=time
+qperp_dir  = [root 'inputs/qperp/'];
+qperp_data = ['qperp_' num2str(shot) '.mat'];
+load([qperp_dir qperp_data])  % loads q, s, and t
+[~,k] = min(abs(t-time_ms));
+qperp = qperp(k,:)';
+
+% obtain parameters from the eich fit to heat flux (strike points etc.)
+ef = eich_fitter(s', qperp, eq0, tok_data_struct);
 
 
 % ===================================
@@ -29,7 +46,7 @@ psixS0 = bicubicHermite(rg,zg,psizr,rxS0,zxS0);
 % orthogonal projection of strike point error onto flux surfaces
 [~,dpsidr,dpsidz] = bicubicHermite(rg,zg,psizr,rSPP(1), zSPP(1));
 u = [dpsidr dpsidz]' / norm([dpsidr dpsidz]);
-v = [r_qirmax(1) - r_qmax(1); z_qirmax(1) - z_qmax(1)];
+v = [ef.rsp(1) - rSPP(1); ef.zsp(1) - zSPP(1)]; 
 res = u*u'*v;
 
 % find (r,z) a distance norm(res) from (rxP,zxP) and on psibry
@@ -48,7 +65,7 @@ if dxpP1'*res < 0, dxpP1 = -dxpP1; end  % vector was pointed wrong direction
 % ..............................
 [~,dpsidr,dpsidz] = bicubicHermite(rg,zg,psizr,rSPP(2),zSPP(2));
 u = [dpsidr dpsidz]' / norm([dpsidr dpsidz]);
-v = [r_qirmax(2) - r_qmax(2); z_qirmax(2) - z_qmax(2)];
+v = [ef.rsp(2) - rSPP(2); ef.zsp(2) - zSPP(2)]; 
 res = u*u'*v;
 
 % project a distance |res| orthogonal to previous step
@@ -68,18 +85,21 @@ dxpP = dxpP1 + dxpP2;
 zmid = zbbbs(k);
 lambda_q = .002; % sol width
 
-drsplit_mid = -lambda_q * log(qirmax(3)/qmax(3) * sum(qmax(2:3))/sum(qirmax(2:3)));
+% heat flux at r > rsplit_ir at midplane goes to outer peak, otherwise
+% middle peak
+rsplit_ir = rmid + lambda_q * log( sum(ef.qpks(2:3)) / ef.qpks(3));
 
-[~,dpsidr] = bicubicHermite(rg,zg,psizr,rmid,zmid);
-dpsixS = dpsidr * drsplit_mid;
+psi_split = bicubicHermite(rg,zg,psizr,rsplit_ir,zmid);
+[psi_mid, dpsidr_mid]  = bicubicHermite(rg,zg,psizr,rmid,zmid);  
+dpsi = psi_split - psi_mid;
+
+psix_split = psixP0 + dpsi;  % desired psi for the secondary x-pt
 
 
 % find North,East,South,West and A,B,C,D vectors
 % ..............................................
 
 % nesw: 4 contour lines at the x-pt, N:=line in the upper right quadrant
-% abcd: 4 lines in the +- grad(psi) directions (except that grad(psi) is 0 
-%       on the x-pt itself), i.e. halfway between nesw vectors
 
 th = pi/2:-.01:-3/2*pi;
 dl = .02;
@@ -96,7 +116,7 @@ else
 end
 
 fexp = 20;
-dxp_split = fexp * drsplit_mid * nesw(2,:)';
+dxp_split = fexp * (psix_split - psixS0) / dpsidr_mid * nesw(2,:)';
 
 if plotit
   plot(rxS0 + [0 dxp_split(1)], zxS0 + [0 dxp_split(2)],'g','linewidth',2)
@@ -108,13 +128,17 @@ end
 
 % SP3 mismatch projection
 % ...............................
-[~,dpsidr,dpsidz] = bicubicHermite(rg,zg,psizr,r_qmax(3)-.04,z_qmax(3));
+[~,dpsidr,dpsidz] = bicubicHermite(rg,zg,psizr,rSPS(end),zSPS(end));
 u = [dpsidr dpsidz]' / norm([dpsidr dpsidz]);
-v = [r_qirmax(3) - r_qmax(3); z_qirmax(3) - z_qmax(3)];
+
+v_sp = [ef.rsp(3) - rSPS(end); ef.zsp(3) - zSPS(end)]; % strike point mismatch
+v_hp = [sim0.r_qirmax(3) - sim0.r_qmax(3); sim0.z_qirmax(3) - sim0.z_qmax(3)]; % heat peak mismatch
+v = (v_sp + v_hp) / 2;
+
 r1 = u*u'*v;  % orthogonal projection of error at strike pt
 
 if plotit
-  plot(r_qmax(3) + [0 r1(1)], z_qmax(3) + [0 r1(2)], 'b','linewidth',2)
+  plot(rSPS(end) + [0 r1(1)], zSPS(end) + [0 r1(2)], 'b','linewidth',2)
 end
 
 n = nesw(1,:)';
@@ -155,15 +179,6 @@ end
 
 xp1 = [rxP1 rxS1 zxP1 zxS1];
 
-
-
-
-
-% x = linspace(1, 1.35, 10);
-% y = linspace(-1.45, -1.25, 10);
-% [x,y] = meshgrid(x,y);
-% f = calc_fluxexp(eqs{1},x,y);
-% mean(mean(f))
 
 
 

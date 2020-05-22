@@ -34,7 +34,7 @@ for k = 1:N
   fprintf(['\nIteration ' num2str(k) ' of ' num2str(N)])
   
   if sfm
-    xps{k+1}  = estimate_xpts_sfm(eqs{k}, sims{k}, shot, time_ms, 1);
+    xps{k+1}  = estimate_xpts_sfm(eqs{k}, sims{k});
     eqs{k+1}  = designeq_ml(xps{k+1}, shot, time_ms, eqs{k});
     
   elseif sfp && ~constrain_sp
@@ -50,8 +50,7 @@ for k = 1:N
     xps{k+1} = [snf.rx snf.zx];                
   end
   
-  sims{k+1} = heatsim_fit(eqs{k+1}, shot, time_ms, .006, .0025, .18, .18, 1);
-%   sims{k+1} = heatsim_fit(eqs{k+1},shot,time_ms,1); 
+  sims{k+1} = heatsim_ml(eqs{k+1},shot,time_ms); 
 end
 
 eqs = {eqs{1}, eqs{end}};
