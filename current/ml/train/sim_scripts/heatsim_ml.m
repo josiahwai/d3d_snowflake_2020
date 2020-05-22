@@ -274,8 +274,6 @@ zentrO = interp1(psiperpO, zperpO, psiSOL);
 [rentrI, rentrO, zentrI, zentrO] = removeNans(rentrI, rentrO, zentrI, ...
     zentrO);
 
-% TAKE WARNING ^ ^: may need to ignore rz entrance that intersect shelf, vert
-
 % determine flux tube partitions
 idxInner = find(psiSOL > psixSL);  % flux tube MIGHT be between x-points
 idxOuter = setdiff(1:nSOL, idxInner); % flux tube outside x-pts

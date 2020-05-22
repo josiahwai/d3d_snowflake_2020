@@ -1,9 +1,9 @@
-function sim = heatsim_fit(eq, shot, time_ms, lambdaQ, chi, plotit)
+function sim = heatsim_fit(eq, shot, time_ms, lambdaq_i, lambdaq_o, chi_i, chi_o, plotit)
 
 % ---------------------------------
 % ANALYZE THE SNOWFLAKE EQUILIBRIUM
 % ---------------------------------
-if nargin == 5, plotit = 0; end
+if ~exist('plotit','var'), plotit = 0; end
 root = '/u/jwai/d3d_snowflake_2020/current/';
 
 % Load tokamak definition
@@ -130,24 +130,26 @@ BTotMid = sqrt(BpMid*BpMid + BtMid*BtMid);
 
 
 % create 1D grid for SOL
-% lambdaQ = 0.002; % SOL power width [m]
 nSOL = 100; % number of grid pts
 
-rSOLMid = linspace(rmid + 5e-5, rmid + 5e-5 + 3*lambdaQ, nSOL)';
+rSOLMid_o = linspace(rmid + 5e-5, rmid + 5e-5 + 3*lambdaq_o, nSOL)';
+psiSOL_o = interp2(rg, zg, psizr, rSOLMid_o, zmid);
 
-psiSOL = interp2(rg, zg, psizr, rSOLMid, zmid);
+rSOLMid_i = linspace(rmid + 5e-5, rmid + 5e-5 + 3*lambdaq_i, nSOL)';
+psiSOL_i = interp2(rg, zg, psizr, rSOLMid_i, zmid);
+
 
 if plotit
-    contour(rg, zg, psizr, [psiSOL(end) psiSOL(end)], '-b')
+    contour(rg, zg, psizr, [psiSOL_o(end) psiSOL_o(end)], '-b')
 end
 
 % Compute the power entering the SOL
 
 Pheat = 4; % [MW]
- 
-fOBL = 0.70; % fraction of power to outboard divertor
 
+fOBL = 0.70; % fraction of power to outboard divertor
 PSOL = Pheat;
+frad = 0.8; 
 
 % power flowing to each divertor leg
 
@@ -155,16 +157,17 @@ PdivOL = PSOL*fOBL;
 PdivIL = PSOL*(1-fOBL);
 
 % Compute the peak heat flux at the midplane
-q0_parallel_IL = PdivIL/(4*pi*rmid*lambdaQ*(BpMid/BTotMid));    % ADJUST THESE FOR MAGNITUDE ??
-q0_parallel_OL = PdivOL/(4*pi*rmid*lambdaQ*(BpMid/BTotMid));
+q0_parallel_IL = PdivIL/(4*pi*rmid*lambdaq_o*(BpMid/BTotMid));    % ADJUST THESE FOR MAGNITUDE ??
+q0_parallel_OL = PdivOL/(4*pi*rmid*lambdaq_o*(BpMid/BTotMid));
 
 
 % Compute midplane heat flux profile
 
-dr = rSOLMid - rmid;
+dr_o = rSOLMid_o - rmid;
+dr_i = rSOLMid_i - rmid;
 
-q_parallel_IL = (q0_parallel_IL).*exp(-dr/lambdaQ);
-q_parallel_OL = (q0_parallel_OL).*exp(-dr/lambdaQ);
+q_parallel_IL = (q0_parallel_IL).*exp(-dr_i/lambdaq_i);
+q_parallel_OL = (q0_parallel_OL).*exp(-dr_o/lambdaq_o);
 
 
 %...........................................
@@ -203,7 +206,7 @@ for ii = 1:ns
     zperpI(ii+1) = zperpI(ii) - eta*psi_z;
     
     psi = interp2(rg, zg, psizr, rperpI(ii+1), zperpI(ii+1));
-    if psi < min(psiSOL)
+    if psi < min(psiSOL_i)
         break
     end
     
@@ -245,7 +248,7 @@ for ii = 1:ns
     zperpO(ii+1) = zperpO(ii) - eta*psi_z;
     
     psi = interp2(rg, zg, psizr, rperpO(ii+1), zperpO(ii+1));
-    if psi < min(psiSOL)
+    if psi < min(psiSOL_o)
         break
     end
     
@@ -265,30 +268,28 @@ end
 
  
 % interpolate in psi to get psi-spaced rz at divertor entrance
-rentrI = interp1(psiperpI, rperpI, psiSOL);
-rentrO = interp1(psiperpO, rperpO, psiSOL);
-zentrI = interp1(psiperpI, zperpI, psiSOL);
-zentrO = interp1(psiperpO, zperpO, psiSOL);
+rentrI = interp1(psiperpI, rperpI, psiSOL_i);
+rentrO = interp1(psiperpO, rperpO, psiSOL_o);
+zentrI = interp1(psiperpI, zperpI, psiSOL_i);
+zentrO = interp1(psiperpO, zperpO, psiSOL_o);
 
 % remove NaNs (produced when interp1 is asked to extrapolate)
 [rentrI, rentrO, zentrI, zentrO] = removeNans(rentrI, rentrO, zentrI, ...
     zentrO);
 
-% TAKE WARNING ^ ^: may need to ignore rz entrance that intersect shelf, vert
-
 % determine flux tube partitions
-idxInner = find(psiSOL > psixSL);  % flux tube MIGHT be between x-points
+idxInner = find(psiSOL_o > psixSL);  % flux tube MIGHT be between x-points
 idxOuter = setdiff(1:nSOL, idxInner); % flux tube outside x-pts
 
 % find rz coordinates of line between x-points (constant psi-spacing)
 rzLine = zeros(length(idxInner),2);
 
 for ii = idxInner
-    rzLine(ii,:) = isoflux_cpFinder(psizr, psiSOL(ii), rg, zg,...
+    rzLine(ii,:) = isoflux_cpFinder(psizr, psiSOL_o(ii), rg, zg,...
         [rxPL rxSL zxPL zxSL]*1.01);
 end
 
-psiperpX = psiSOL(idxInner);
+psiperpX = psiSOL_o(idxInner);
 rentrX = rzLine(:,1);
 zentrX = rzLine(:,2);
 
@@ -381,7 +382,6 @@ end
 %.........................
 % Heat equation parameters
 
-% chi = 0.01; % thermal  diffusivity [Wb^2/s]
 Ti = 50 * 11600;  % [K]   Ion and electron temperatures
 Te = 50 * 11600;  % [K]
 k = 1.38e-23;  % Boltzmann constant [(m^2*kg)/(s^2*K)]
@@ -403,9 +403,7 @@ psiSOLX = NaN;
 qdiv_parX = NaN;
 if ~snowPlus && ~perfectSnow
     nRegion = length(LdivX);
-    iRegion = 1:nRegion;
-
-    frad = 0.80; 
+    iRegion = 1:nRegion;   
     
     if snowMinHFS
         q_par_midplane = q_parallel_IL(iRegion); 
@@ -413,12 +411,12 @@ if ~snowPlus && ~perfectSnow
         q_par_midplane = q_parallel_OL(iRegion);
     end
     
-    psiSOLX = psiSOL(iRegion);
+    psiSOLX = psiSOL_o(iRegion);
     
     % find heat flux
     [qdiv_perpX, sdivX, qdiv_parX] = ...
         find_qperp(nRegion, iRegion, psiperpX, tauX, q_par_midplane, frad, ...
-        chi, psiSOLX, rdivX, zdivX, limdata, psizr, rg, zg, bzero, rzero, ...
+        chi_o, psiSOLX, rdivX, zdivX, limdata, psizr, rg, zg, bzero, rzero, ...
         sLimTot);
 end
 
@@ -436,13 +434,12 @@ elseif snowMinHFS
 end
 
 q_par_midplane = q_parallel_IL(iRegion);
-psiSOLI = psiSOL(iRegion);
-frad = 0.80; 
+psiSOLI = psiSOL_i(iRegion);
 
 % find heat flux
 [qdiv_perpI, sdivI, qdiv_parI] = ...
     find_qperp(nRegion, iRegion, psiperpI, tauI, q_par_midplane, frad, ...
-    chi, psiSOLI, rdivI, zdivI, limdata, psizr, rg, zg, bzero, rzero, ...
+    chi_i, psiSOLI, rdivI, zdivI, limdata, psizr, rg, zg, bzero, rzero, ...
     sLimTot);
 
 
@@ -458,13 +455,13 @@ end
 % iRegion = iRegion-1;
 
 q_par_midplane = q_parallel_OL(iRegion);
-psiSOLO = psiSOL(iRegion);
-frad = 0.80; 
+psiSOLO = psiSOL_o(iRegion);
+
 
 % find heat flux
 [qdiv_perpO, sdivO, qdiv_parO] = ...
     find_qperp(nRegion, iRegion, psiperpO, tauO, q_par_midplane, frad, ...
-    chi, psiSOLO, rdivO, zdivO, limdata, psizr, rg, zg, bzero, rzero, ...
+    chi_o, psiSOLO, rdivO, zdivO, limdata, psizr, rg, zg, bzero, rzero, ...
     sLimTot);
 
 
@@ -570,6 +567,9 @@ Apk_qirmaxN = Apk_qirmax/sum(Apk_qirmax(~isnan(Apk_qirmax)));
 
 %..............
 % Save the data  
+qdiv_perpI([1 end]) = 0;
+qdiv_perpX([1 end]) = 0;
+qdiv_perpO([1 end]) = 0;
 
 s_qmax =      [s_qmaxI     s_qmaxX     s_qmaxO    ];
 s_qirmax =    [s_qirmaxI   s_qirmaxX   s_qirmaxO  ];
@@ -622,14 +622,15 @@ if plotit
   xline(s45Deg2, '--k'); 
   
   plot(s, qir/nansum(qirmax), '-ok', 'LineWidth', 1, 'MarkerSize', 2)
-
+  ylim([0 1.1*max(qir)])
+  
   qdiv_perpI([1 end]) = 0;
   qdiv_perpX([1 end]) = 0;
   qdiv_perpO([1 end]) = 0;
   
   s = [sdivI sdivX sdivO];
   q = [qdiv_perpI; qdiv_perpX; qdiv_perpO];
-  plot(s,q/nansum(qmax), '-r', 'linewidth', 2)
+  plot(s,q/nansum(qmax), '-r', 'linewidth', 2)    
   set(gcf,'position',[431 504 577 188])
   axis([0.6000    2.0000         0    0.6005])
   

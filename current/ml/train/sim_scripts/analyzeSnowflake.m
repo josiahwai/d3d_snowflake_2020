@@ -69,7 +69,7 @@ rSPP = rSPP(iSort);
 zSPP = zSPP(iSort);
 
 % find and sort secondary strike pts
-[~,iS] = findpeaks(-abs(psilim - psixS), 'minpeakheight',-.01);
+[~,iS] = findpeaks(-abs(psilim - psixS), 'minpeakheight',-.005);
 
 rSPS=[]; zSPS=[]; sSPS=[];
 for k = 1:length(iS)
