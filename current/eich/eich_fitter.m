@@ -52,7 +52,7 @@ ft = fittype(eichfun_o);
 options = fitoptions(ft);
 options.StartPoint = [max(qperp(io)) 1 1 fexpo 160 4];
 options.Lower = [0 0 0 fexpo 0 0];  % lock flux expansion
-options.Upper = [inf inf inf fexpo inf inf];
+options.Upper = [1000 10 10 fexpo 200 100];
     
 [fito, gofo] = fit(s_nogap(io), qperp(io), ft, options);
 sspo =  fito.s0;

@@ -39,7 +39,7 @@ for k = 1:N
     eqs{k+1}  = designeq_ml(xps{k+1}, shot, time_ms, eqs{k});
     
   elseif sfp && ~constrain_sp
-    xps{k+1} = estimate_xpts_sfp(eqs{k}, sims{k});
+    xps{k+1} = estimate_xpts_sfp(eqs{k}, shot, time_ms);
     eqs{k+1}  = designeq_ml(xps{k+1}, shot, time_ms, eqs{k});
     
   elseif sfp && constrain_sp

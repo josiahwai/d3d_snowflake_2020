@@ -44,8 +44,8 @@ axis equal
 axis([1.1342    1.2719   -1.4001   -1.2867])
 xlabel('R [m]')
 ylabel('Z [m]')
-xticks(1.15:0.05:1.25)
-yticks(-1.4:0.05:-1.3)
+xticks(1.14:0.02:1.26)
+yticks(-1.4:0.02:-1.3)
 set(gcf,'position', [698 412 593 460])
 
 

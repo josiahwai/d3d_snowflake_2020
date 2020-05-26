@@ -1,19 +1,35 @@
-function xp1 = estimate_xpts_sfp(eq0,sim0,plotit)
-
-% load('155354_2730_eq0')
-% load('155354_2730_sim0.mat')
+function xp1 = estimate_xpts_sfp(eq0, shot, time_ms, plotit)
 
 c_relax = 0.8;  % relaxation constant on the step sizes
 
 if ~exist('plotit','var'), plotit = 0; end
 
+% analyze equilibrium
 struct_to_ws(eq0); clear xlim ylim
-struct_to_ws(sim0);
+snow0 = analyzeSnowflake(eq0);
+[rxP0, rxS0] = unpack(snow0.rx);
+[zxP0, zxS0] = unpack(snow0.zx);
+rSPP = snow0.rSPP([1 end]);  % the 'real' heat flux strike pts
+zSPP = snow0.zSPP([1 end]); 
+psixP0 = bicubicHermite(rg,zg,psizr,rxP0,zxP0);
 
-[zxP0, zxS0] = unpack(zx);
-[rxP0, rxS0] = unpack(rx);
-[psixP0, psixS0] = unpack(psix);
+% analyze heat flux
+% .................
 
+% Load heat flux data q(s,t), s=distance along limiter, and t=time
+root = '/u/jwai/d3d_snowflake_2020/current/';
+qperp_dir  = [root 'inputs/qperp/'];
+qperp_data = ['qperp_' num2str(shot) '.mat'];
+load([qperp_dir qperp_data])  % loads q, s, and t
+[~,k] = min(abs(t-time_ms));
+qperp = qperp(k,:)';
+
+% obtain parameters from the eich fit to heat flux (strike points etc.)
+load('d3d_obj_mks_struct_6565.mat')
+ef = eich_fitter(s', qperp, eq0, tok_data_struct);
+ef = removeNans(ef);
+ef.rsp = ef.rsp([1 end]); % the 'real' heat flux strike pts
+ef.zsp = ef.zsp([1 end]); 
 
 % ===================================
 % Estimate correction to primary x-pt 
@@ -21,32 +37,32 @@ struct_to_ws(sim0);
 
 % secondary x-pt should only move to (partially) compensate for strike pt 
 % that its closer to. Primary should compensate for the other
-dist(1) = norm([rxS0 zxS0] - [r_qirmax(1) z_qirmax(1)]);
-dist(2) = nan;
-dist(3) = norm([rxS0 zxS0] - [r_qirmax(3) z_qirmax(3)]);
+dist(1) = norm([rxS0 zxS0] - [rSPP(1) zSPP(1)]);
+dist(2) = norm([rxS0 zxS0] - [rSPP(end) zSPP(end)]);
 [~,ipkP] = max(dist);
-[db,ipkS] = min(dist); 
+[mindist,ipkS] = min(dist); 
 
 % weights on how much to move the primary x-pt versus secondary x-pt to
 % compensate for SP(ipkS) mismatch. Move secondary x-pt more if its closer
-wtP = db / nansum(dist);           
+wtP = mindist / nansum(dist);           
 wtS = 1-wtP;
 
-errorP = norm([r_qirmax(ipkP) - r_qmax(ipkP); z_qirmax(ipkP) - z_qmax(ipkP)]);
-errorS = norm([r_qirmax(ipkS) - r_qmax(ipkS); z_qirmax(ipkS) - z_qmax(ipkS)]);
+errorP = [ef.rsp(ipkP) - rSPP(ipkP); ef.zsp(ipkP) - zSPP(ipkP)];
+errorS = [ef.rsp(ipkS) - rSPP(ipkS); ef.zsp(ipkS) - zSPP(ipkS)];
 
 correct_secondary_mismatch = 1;
-if errorP > 3*errorS, correct_secondary_mismatch = 0; end  
+if norm(errorP) > 3*norm(errorS), correct_secondary_mismatch = 0; end  
 
 
 % Correction due to SP(ipkP) mismatch -- usually SP1
 % ..................................................
 
 % orthogonal projection of strike point error onto flux surfaces
-[~,dpsidr,dpsidz] = bicubicHermite(rg,zg,psizr,r_qmax(ipkP),z_qmax(ipkP));
+[~,dpsidr,dpsidz] = bicubicHermite(rg,zg,psizr,ef.rsp(ipkP),ef.zsp(ipkP));
 u = [dpsidr dpsidz]' / norm([dpsidr dpsidz]);
-v = [r_qirmax(ipkP) - r_qmax(ipkP); z_qirmax(ipkP) - z_qmax(ipkP)];
-res = u*u'*v;
+res = u*u'*errorP;
+
+
 
 % find (r,z) a distance norm(res) from (rxP,zxP) and on psibry
 th = atan(res(2)/res(1));
@@ -66,10 +82,9 @@ dxpP2 = [0 0];
 if correct_secondary_mismatch    
   
   % orthogonal projection of strike point error onto flux surfaces
-  [~,dpsidr,dpsidz] = bicubicHermite(rg,zg,psizr,r_qmax(ipkS),z_qmax(ipkS));
+  [~,dpsidr,dpsidz] = bicubicHermite(rg,zg,psizr,ef.rsp(ipkS),ef.zsp(ipkS));
   u = [dpsidr dpsidz]' / norm([dpsidr dpsidz]);
-  v = [r_qirmax(ipkS) - r_qmax(ipkS); z_qirmax(ipkS) - z_qmax(ipkS)];
-  resS = u*u'*v;
+  resS = u*u'*errorS;
   
   % find (r,z) a distance norm(res) from (rxP,zxP) and on psibry
   th = atan(resS(2)/resS(1));
@@ -107,26 +122,18 @@ if correct_secondary_mismatch
   crz = contourc(rg,zg,psizr,[psixP0 psixP0]);
   snow0 = analyzeSnowflake(eq0);
   
-  % which divetor leg to use
-  if ipkS == 3 % use outer
-    rstrike = snow0.rSPP(2);
-    zstrike = snow0.zSPP(2);
-  else % use inner
-    rstrike = snow0.rSPP(1);
-    zstrike = snow0.zSPP(1);
-  end
-  
-  rboxmin = min(rxP0, rstrike) - .05;
-  rboxmax = max(rxP0, rstrike) + .05;
-  zboxmin = min(zxP0, zstrike) - .05;
-  zboxmax = max(zxP0, zstrike) + .05;
+  rboxmin = min(rxP0, rSPP(ipkS)) - .05;
+  rboxmax = max(rxP0, rSPP(ipkS)) + .05;
+  zboxmin = min(zxP0, zSPP(ipkS)) - .05;
+  zboxmax = max(zxP0, zSPP(ipkS)) + .05;
   
   k = find(crz(1,:) < rboxmax & crz(1,:) > rboxmin & crz(2,:) < zboxmax & ...
     crz(2,:) > zboxmin);
   
   [r,z] = interparc(crz(1,k),crz(2,k), 100, 1);
   iNear = dsearchn([r z], [rxS0 zxS0]);
-  rNear = r(iNear);
+  
+  rNear = r(iNear);  % point on divertor leg nearest secodary x-pt
   zNear = z(iNear);
   
   w = [rxP0 zxP0]' - [rNear zNear]';
@@ -145,11 +152,10 @@ rxS1 = rxS0 + dxpS(1);
 zxS1 = zxS0 + dxpS(2);
 
 
-
 if plotit
   figure(800)
   clf
-  plot_eq(eq0)
+  plot_eq(eq0,800)
   axis([1 1.5 -1.4 -.9])
   plot(rxS1,zxS1,'bx','markersize',10,'linewidth', 4)
   plot(rxP1,zxP1,'bx','markersize',10,'linewidth', 4)

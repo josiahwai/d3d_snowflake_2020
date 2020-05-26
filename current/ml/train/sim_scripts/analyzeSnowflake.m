@@ -83,24 +83,24 @@ rSPS = rSPS(iSort);
 zSPS = zSPS(iSort);
 
 
-% Find the 'true' heatflux strike pts based on snow geometry
-xp2in = inpolygon(rxS, zxS, limdata(2,:), limdata(1,:));
-if snowPlus
-  sSP_heat = sSPP(1:2);
-elseif snowMinLFS
-  if xp2in
-   sSP_heat = [sSPP(1:2) sSPS([2 4])];
-  else
-    sSP_heat = sSPP(1:2);
-  end
-elseif snowMinHFS
-  if xp2in
-    sSP_heat = [sSPPS([1 3]) sSPP(end-1:end)];
-  else
-    sSP_heat = sSPP(1:2);
-  end
-end
-sSP_heat = [sSP_heat nan(1,4-length(sSP_heat))];
+% % Find the 'true' heatflux strike pts based on snow geometry
+% xp2in = inpolygon(rxS, zxS, limdata(2,:), limdata(1,:));
+% if snowPlus
+%   sSP_heat = sSPP(1:2);
+% elseif snowMinLFS
+%   if xp2in
+%    sSP_heat = [sSPP(1:2) sSPS([2 4])];
+%   else
+%     sSP_heat = sSPP(1:2);
+%   end
+% elseif snowMinHFS
+%   if xp2in
+%     sSP_heat = [sSPPS([1 3]) sSPP(end-1:end)];
+%   else
+%     sSP_heat = sSPP(1:2);
+%   end
+% end
+% sSP_heat = [sSP_heat nan(1,4-length(sSP_heat))];
   
 
 % plot it
@@ -116,11 +116,12 @@ if plotit
   scatter(rSPS,zSPS,'b','filled')
 end
 
-% snow = [rxP rxS zxP zxS rSnow zSnow drSnow dzSnow rSPP zSPP sSPP rSPS zSPS sSPS];
+[rSPP, zSPP, sSPP, rSPS, zSPS, sSPS] = removeNans(rSPP, zSPP, sSPP, rSPS, zSPS, sSPS);
+
 snow = struct('rx', [rxP rxS], 'zx',[zxP zxS], 'rSnow', ...
   rSnow, 'zSnow', zSnow, 'drSnow', drSnow, 'dzSnow', dzSnow, 'rSPP', ...
   rSPP, 'zSPP', zSPP, 'sSPP', sSPP, 'rSPS', rSPS, 'zSPS', zSPS, 'sSPS', ...
-  sSPS, 'sSP_heat', sSP_heat, 'snowType', snowType, 'psixPL',psixP, ....
+  sSPS, 'snowType', snowType, 'psixPL',psixP, ....
   'psixSL',psixS, 'snowPlus', snowPlus, 'rg', rg, 'zg', zg, 'psizr', psizr);
 
 

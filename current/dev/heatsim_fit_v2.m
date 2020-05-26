@@ -406,18 +406,13 @@ if ~snowPlus && ~perfectSnow
     iRegion = 1:nRegion;   
     
     if snowMinHFS
-        q_par_midplane = q_parallel_IL(iRegion); 
+        qentr_par = q_parallel_IL(iRegion) * (1 - frad); 
     elseif snowMinLFS
-        q_par_midplane = q_parallel_OL(iRegion);
+        qentr_par = q_parallel_OL(iRegion) * (1 - frad);
     end
-    
-    psiSOLX = psiSOL_o(iRegion);
-    
-    % find heat flux
-    [qdiv_perpX, sdivX, qdiv_parX] = ...
-        find_qperp(nRegion, iRegion, psiperpX, tauX, q_par_midplane, frad, ...
-        chi_o/5, psiSOLX, rdivX, zdivX, limdata, psizr, rg, zg, bzero, rzero, ...
-        sLimTot);
+                
+    [sdivX, qdiv_perpX] = find_qperp_v2(...
+      rdivX, zdivX, tauX, qentr_par, chi_o, limdata, eq);
 end
 
 
@@ -433,14 +428,12 @@ elseif snowMinHFS
     iRegion = length(LdivX)+1:length(LdivX) + nRegion;    
 end
 
-q_par_midplane = q_parallel_IL(iRegion);
+qentr_parI = q_parallel_IL(iRegion) * (1 - frad);
 psiSOLI = psiSOL_i(iRegion);
 
 % find heat flux
-[qdiv_perpI, sdivI, qdiv_parI] = ...
-    find_qperp(nRegion, iRegion, psiperpI, tauI, q_par_midplane, frad, ...
-    chi_i, psiSOLI, rdivI, zdivI, limdata, psizr, rg, zg, bzero, rzero, ...
-    sLimTot);
+[sdivI, qdiv_perpI] = find_qperp_v2(...
+      rdivI, zdivI, tauI, qentr_parI, chi_i, limdata, eq);
 
 
 %........................................................
@@ -454,15 +447,15 @@ elseif snowMinLFS
 end
 % iRegion = iRegion-1;
 
-q_par_midplane = q_parallel_OL(iRegion);
+qentr_parO = q_parallel_OL(iRegion) * (1 - frad);
 psiSOLO = psiSOL_o(iRegion);
 
 
 % find heat flux
-[qdiv_perpO, sdivO, qdiv_parO] = ...
-    find_qperp(nRegion, iRegion, psiperpO, tauO, q_par_midplane, frad, ...
-    chi_o, psiSOLO, rdivO, zdivO, limdata, psizr, rg, zg, bzero, rzero, ...
-    sLimTot);
+[sdivO, qdiv_perpO] = find_qperp_v2(...
+      rdivO, zdivO, tauO, qentr_parO, chi_o, limdata, eq);
+
+
 
 
 %............................
