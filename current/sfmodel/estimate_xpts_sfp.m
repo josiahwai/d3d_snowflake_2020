@@ -1,4 +1,4 @@
-function xp1 = estimate_xpts_sfp(eq0, shot, time_ms, plotit)
+function xp1 = estimate_xpts_sfp(eq0, ef, plotit)
 
 c_relax = 0.8;  % relaxation constant on the step sizes
 
@@ -13,20 +13,7 @@ rSPP = snow0.rSPP([1 end]);  % the 'real' heat flux strike pts
 zSPP = snow0.zSPP([1 end]); 
 psixP0 = bicubicHermite(rg,zg,psizr,rxP0,zxP0);
 
-% analyze heat flux
-% .................
-
-% Load heat flux data q(s,t), s=distance along limiter, and t=time
-root = '/u/jwai/d3d_snowflake_2020/current/';
-qperp_dir  = [root 'inputs/qperp/'];
-qperp_data = ['qperp_' num2str(shot) '.mat'];
-load([qperp_dir qperp_data])  % loads q, s, and t
-[~,k] = min(abs(t-time_ms));
-qperp = qperp(k,:)';
-
-% obtain parameters from the eich fit to heat flux (strike points etc.)
-load('d3d_obj_mks_struct_6565.mat')
-ef = eich_fitter(s', qperp, eq0, tok_data_struct);
+% unload eich fit
 ef = removeNans(ef);
 ef.rsp = ef.rsp([1 end]); % the 'real' heat flux strike pts
 ef.zsp = ef.zsp([1 end]); 

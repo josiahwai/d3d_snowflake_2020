@@ -4,7 +4,8 @@
 
 % lambdaq in [cm], chi in Wb^2/s
 
-function [lambdaq_i, lambdaq_o, chi_i, chi_o] = find_sol_params(shot)
+% function [lambdaq_i, lambdaq_o, chi_i, chi_o] = find_sol_params(shot)
+shot = 155355;
 
 coeff = [];
 load('d3d_obj_mks_struct_6565.mat')
@@ -49,10 +50,11 @@ for iTime = 1:length(t)
 end
 
 
-iOutliers = sum(isoutlier(coeff),2);
-avg_coeff = mean(coeff(~iOutliers,:));
+% iOutliers = sum(isoutlier(coeff),2);
+% avg_coeff = mean(coeff(~iOutliers,:));
+avg_coeff = mean(coeff);
 
-[lambdaq_i, lambdaq_o, chi_i, chi_o] = unpack(avg_coeff);
+[lambdaq_i, lambdaq_o, chi_i, chi_o] = unpack(avg_coeff)
 
 
 figure
@@ -65,12 +67,14 @@ for i = 1:4
   subplot(4,2,2*i-1)
   bar(coeff(sfp,i))    
   title(titles{i})
-  ylim([0 1])
+  ax = gca;
+  yl = ax.YLim;
+  
   
   subplot(4,2,2*i)
   bar(coeff(sfm,i), 'r')    
   title(titles{i})
-  ylim([0 1])
+  ylim(yl)
 end
 
 
@@ -87,7 +91,7 @@ ylim([0 0.4])
 
 set(gcf, 'position', [671 640 577 238])
 
-end
+
 
 
 

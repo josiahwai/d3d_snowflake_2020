@@ -1,4 +1,4 @@
-function xp1 = estimate_xpts_sfm(eq0, sim0, shot, time_ms, plotit)
+function xp1 = estimate_xpts_sfm(eq0, ef, sim0, plotit)
 
 c_relaxP = 0.8;
 c_relaxS = 0.3;  % relaxation constant on the step sizes
@@ -19,21 +19,6 @@ rSPS = snow0.rSPS; % secondary strike points
 zSPS = snow0.zSPS;
 psixP0 = bicubicHermite(rg,zg,psizr,rxP0,zxP0);
 psixS0 = bicubicHermite(rg,zg,psizr,rxS0,zxS0);
-
-% ==================
-% Analyze Heat Flux
-% ==================
-load('d3d_obj_mks_struct_6565.mat')
-
-% Load heat flux data q(s,t), s=distance along limiter, and t=time
-qperp_dir  = [root 'inputs/qperp/'];
-qperp_data = ['qperp_' num2str(shot) '.mat'];
-load([qperp_dir qperp_data])  % loads q, s, and t
-[~,k] = min(abs(t-time_ms));
-qperp = qperp(k,:)';
-
-% obtain parameters from the eich fit to heat flux (strike points etc.)
-ef = eich_fitter(s', qperp, eq0, tok_data_struct);
 
 
 % ===================================

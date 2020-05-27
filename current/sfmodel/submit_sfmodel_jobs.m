@@ -3,9 +3,9 @@ clear all; clc; close all;
 % ========
 % SETTINGS
 % ========
-shot = 155328;
+shot = 155355;
 runbatch = 1;
-sim_sfm = 0;      % simulate times where IR predicts snowflake minus
+sim_sfm = 1;      % simulate times where IR predicts snowflake minus
 sim_sfp = 0;      % simulate times where IR predicts snowflake plus
 constrain_sp = 0; % for sfp only, constrain via strike pt instead of x-pt
 

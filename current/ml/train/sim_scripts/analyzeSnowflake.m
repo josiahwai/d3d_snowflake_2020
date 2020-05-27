@@ -82,6 +82,13 @@ end
 rSPS = rSPS(iSort);
 zSPS = zSPS(iSort);
 
+[rSPP, zSPP, sSPP, rSPS, zSPS, sSPS] = removeNans(rSPP, zSPP, sSPP, rSPS, zSPS, sSPS);
+
+if length(sSPS) > 4
+  sSPS = sSPS(1:4);
+  rSPS = rSPS(1:4);
+  zSPS = zSPS(1:4);
+end
 
 % % Find the 'true' heatflux strike pts based on snow geometry
 % xp2in = inpolygon(rxS, zxS, limdata(2,:), limdata(1,:));
@@ -115,8 +122,6 @@ if plotit
   scatter(rSPP,zSPP,'r','filled')
   scatter(rSPS,zSPS,'b','filled')
 end
-
-[rSPP, zSPP, sSPP, rSPS, zSPS, sSPS] = removeNans(rSPP, zSPP, sSPP, rSPS, zSPS, sSPS);
 
 snow = struct('rx', [rxP rxS], 'zx',[zxP zxS], 'rSnow', ...
   rSnow, 'zSnow', zSnow, 'drSnow', drSnow, 'dzSnow', dzSnow, 'rSPP', ...

@@ -21,15 +21,15 @@ if isfield(eq,'gdata'), eq = eq.gdata; end
 
 % define the eich functions
 eichfun_i = @(q0, S, lambdaQ, fExp, s0, x) (q0/2)*exp((S/(2*lambdaQ*fExp))^2 ...
-  - (-(x - s0))./(lambdaQ*fExp)).*erfc(S/(2*lambdaQ*fExp) - (-(x - s0))./S);
+  - (-(x - s0))./(lambdaQ*fExp)).*erfc(S/(2*lambdaQ*fExp) - (-(x - s0))./(S*fExp));
 
 eichfun_o = @(q0, S, lambdaQ, fExp, s0, qBg, x) (q0/2)*exp((S/(2*lambdaQ*fExp))^2 ...
-  - (x-s0)./(lambdaQ*fExp)).*erfc(S/(2*lambdaQ*fExp) - (x-s0)./S) + qBg;
+  - (x-s0)./(lambdaQ*fExp)).*erfc(S/(2*lambdaQ*fExp) - (x-s0)./(S*fExp)) + qBg;
 
 
 % determine flux expansion from geometry
 snow = analyzeSnowflake(eq);
-[fexpi,fexpo] = unpack(calc_fluxexp(eq, snow.rSPP, snow.zSPP));
+[fexpi,fexpo] = unpack(calc_fluxexp(eq, snow.rSPP([1 end]), snow.zSPP([1 end])));
     
 
 % index of heat flux regions (inner, outer, middle)
@@ -50,10 +50,11 @@ s_nogap(iGap(end)+1:end) = s_nogap(iGap(end)+1:end) - dgap;
 
 ft = fittype(eichfun_o);
 options = fitoptions(ft);
-options.StartPoint = [max(qperp(io)) 1 1 fexpo 160 4];
-options.Lower = [0 0 0 fexpo 0 0];  % lock flux expansion
-options.Upper = [1000 10 10 fexpo 200 100];
-    
+
+options.StartPoint = [max(qperp(io)) 0.2 0.3 fexpo 160 4];
+options.Lower = [0 0 0 fexpo 0 0]; 
+options.Upper = [inf inf inf fexpo inf inf];  % lock flux expansion
+
 [fito, gofo] = fit(s_nogap(io), qperp(io), ft, options);
 sspo =  fito.s0;
 
@@ -76,7 +77,7 @@ if isempty(sspx), sspx = nan; end
 % ....................................
 ft = fittype(eichfun_i);
 options = fitoptions(ft);
-options.StartPoint = [max(qperp(ii)) 1 1 fexpi 100];
+options.StartPoint = [max(qperp(ii)) 1 0.6 fexpi 100];
 options.Lower = [0 0 0 fexpi 0];
 options.Upper = [inf inf inf fexpi inf];
 
@@ -100,16 +101,23 @@ mi = 3.344e-27;   % Deuterium mass [kg]
 cs = sqrt(k*(Ti + Te)/mi); % sound speed
 
 % Outer chi
-L = 5;                          % connection length varies from 1.5 to ~20m
+L = 3;                          % connection length [m]
 tau = L/cs;                     % time of flight
 chiTemp = (fito.S/100)^2/tau;   % thermal diffusivity in units [m^2/s]    
 struct_to_ws(eq);               % Compute the flux gradient at strike point
-[~, psi_r, psi_z] = bicubicHermite(rg, zg, psizr, snow.rSPP(2), snow.zSPP(2));
+[~, psi_r, psi_z] = bicubicHermite(rg, zg, psizr, snow.rSPP(end), snow.zSPP(end));
 gradpsi = sqrt(psi_r^2 + psi_z^2);
 chi_o = chiTemp*gradpsi^2;        % thermal diffusivity in units [Wb^2/s]
 
 % Inner chi
-chi_i = chi_o * fito.S^2 / fiti.S^2;
+L = 2;                          % connection length [m]
+tau = L/cs;                     % time of flight
+chiTemp = (fiti.S/100)^2/tau;   % thermal diffusivity in units [m^2/s]    
+struct_to_ws(eq);               % Compute the flux gradient at strike point
+[~, psi_r, psi_z] = bicubicHermite(rg, zg, psizr, snow.rSPP(1), snow.zSPP(1));
+gradpsi = sqrt(psi_r^2 + psi_z^2);
+chi_i = chiTemp*gradpsi^2;        % thermal diffusivity in units [Wb^2/s]
+
 
 % write qperp peak info
 if ~isnan(sspx)

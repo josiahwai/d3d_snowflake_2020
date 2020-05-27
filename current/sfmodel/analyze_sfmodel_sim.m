@@ -12,9 +12,11 @@ for k = 1:N
   zx = xps{k}(3:4);
   scatter(rx,zx,'filled', 'markerfacecolor', c(floor(k/N*length(c)),:))
 end
+set(gcf,'position', [614 379 441 321])
 
 plotsim(sims{1})
 plotsim(sims{end})
+set(gcf,'position',[617 135 442 143])
 
 % for k = 1:N
 %   plotsim(sims{k})
