@@ -2,7 +2,7 @@ close all;
 warning('off','all')
 shot = 165288;
 time_ms = 4200;
-saveit = 1;
+saveit = 0;
 
 root = '/u/jwai/d3d_snowflake_2020/current/';
 addpath(genpath(root));
@@ -153,9 +153,9 @@ plot(sI*100, qI*100, 'Color', blue, 'linewidth', 1.5)
 plot(sX*100, qX*100, 'Color', blue, 'linewidth', 1.5)
 plot(sO*100, qO*100, 'Color', blue, 'linewidth', 1.5)
 
-xline(efit_snow.sSP_heat(1)*100,'--','Color', blue, 'linewidth', 1);
-xline(efit_snow.sSP_heat(2)*100,'--','Color', blue, 'linewidth', 1);
-xline(efit_snow.sSP_heat(4)*100,'--','Color', blue, 'linewidth', 1);
+% xline(efit_snow.sSP_heat(1)*100,'--','Color', blue, 'linewidth', 1);
+% xline(efit_snow.sSP_heat(2)*100,'--','Color', blue, 'linewidth', 1);
+% xline(efit_snow.sSP_heat(4)*100,'--','Color', blue, 'linewidth', 1);
 
 
 % plot efit+irtv heat flux
@@ -167,9 +167,9 @@ plot(sI*100, qI*f, 'Color', orange, 'linewidth', 1.5)
 plot(sX*100, qX*f, 'Color', orange, 'linewidth', 1.5)
 plot(sO*100, qO*f, 'Color', orange, 'linewidth', 1.5)
 
-xline(snow.sSP_heat(1)*100,'--','Color', orange, 'linewidth', 1);
-xline(snow.sSP_heat(2)*100,'--','Color', orange, 'linewidth', 1);
-xline(snow.sSP_heat(4)*100,'--','Color', orange, 'linewidth', 1);
+% xline(snow.sSP_heat(1)*100,'--','Color', orange, 'linewidth', 1);
+% xline(snow.sSP_heat(2)*100,'--','Color', orange, 'linewidth', 1);
+% xline(snow.sSP_heat(4)*100,'--','Color', orange, 'linewidth', 1);
 
 text(164,58, 'b', 'fontsize', 16, 'fontweight', 'bold')
 

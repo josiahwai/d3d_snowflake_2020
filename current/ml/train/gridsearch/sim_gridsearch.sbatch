@@ -2,7 +2,7 @@
 
 #SBATCH -n 1
 #SBATCH -p general
-#SBATCH -t 01:00:00
+#SBATCH -t 02:00:00
 #SBATCH -J heatsim
 #SBATCH --mem=1000
 #SBATCH -o %j.out

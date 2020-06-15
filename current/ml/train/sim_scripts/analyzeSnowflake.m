@@ -8,23 +8,7 @@ struct_to_ws(eq);
 
 % find snowflake
 [psizr, rg, zg] = regrid(rg, zg, psizr, 257, 257);
-[rguess,zguess] = isoflux_xpFinder(psizr,1.15,-1.25,rg,zg); 
-[rxP, zxP, rxS, zxS] = snowFinder(psizr, rguess, zguess, 0.1, rg, zg); 
-
-if rxP < min(rg), rxP = min(rg) + .02; end
-if rxS < min(rg), rxS = min(rg) + .02; end
-if zxP < min(zg), zxP = min(zg) + .02; end
-if zxS < min(zg), zxS = min(zg) + .02; end
-
-% zoom in on snowflake x-pts
-[rxP, zxP, psixP] = isoflux_xpFinder(psizr, rxP, zxP, rg, zg);
-[rxS, zxS, psixS] = isoflux_xpFinder(psizr, rxS, zxS, rg, zg);
-
-if abs(psixS - psibry) < abs(psixP - psibry)
-    swap(psixP, psixS);
-    swap(rxP, rxS);
-    swap(zxP, zxS);   
-end
+[rxP, rxS, zxP, zxS, psixP, psixS] = my_snowfinder(rg, zg, psizr, psibry);
 
 snowPlus=0; snowMinLFS=0; snowMinHFS=0;
 if psixS > psixP
@@ -85,7 +69,7 @@ rSPP = rSPP(iSort);
 zSPP = zSPP(iSort);
 
 % find and sort secondary strike pts
-[~,iS] = findpeaks(-abs(psilim - psixS), 'minpeakheight',-.01);
+[~,iS] = findpeaks(-abs(psilim - psixS), 'minpeakheight',-.005);
 
 rSPS=[]; zSPS=[]; sSPS=[];
 for k = 1:length(iS)
@@ -98,25 +82,32 @@ end
 rSPS = rSPS(iSort);
 zSPS = zSPS(iSort);
 
+[rSPP, zSPP, sSPP, rSPS, zSPS, sSPS] = removeNans(rSPP, zSPP, sSPP, rSPS, zSPS, sSPS);
 
-% Find the 'true' heatflux strike pts based on snow geometry
-xp2in = inpolygon(rxS, zxS, limdata(2,:), limdata(1,:));
-if snowPlus
-  sSP_heat = sSPP(1:2);
-elseif snowMinLFS
-  if xp2in
-   sSP_heat = [sSPP(1:2) sSPS([2 4])];
-  else
-    sSP_heat = sSPP(1:2);
-  end
-elseif snowMinHFS
-  if xp2in
-    sSP_heat = [sSPPS([1 3]) sSPP(end-1:end)];
-  else
-    sSP_heat = sSPP(1:2);
-  end
+if length(sSPS) > 4
+  sSPS = sSPS(1:4);
+  rSPS = rSPS(1:4);
+  zSPS = zSPS(1:4);
 end
-sSP_heat = [sSP_heat nan(1,4-length(sSP_heat))];
+
+% % Find the 'true' heatflux strike pts based on snow geometry
+% xp2in = inpolygon(rxS, zxS, limdata(2,:), limdata(1,:));
+% if snowPlus
+%   sSP_heat = sSPP(1:2);
+% elseif snowMinLFS
+%   if xp2in
+%    sSP_heat = [sSPP(1:2) sSPS([2 4])];
+%   else
+%     sSP_heat = sSPP(1:2);
+%   end
+% elseif snowMinHFS
+%   if xp2in
+%     sSP_heat = [sSPPS([1 3]) sSPP(end-1:end)];
+%   else
+%     sSP_heat = sSPP(1:2);
+%   end
+% end
+% sSP_heat = [sSP_heat nan(1,4-length(sSP_heat))];
   
 
 % plot it
@@ -132,11 +123,10 @@ if plotit
   scatter(rSPS,zSPS,'b','filled')
 end
 
-% snow = [rxP rxS zxP zxS rSnow zSnow drSnow dzSnow rSPP zSPP sSPP rSPS zSPS sSPS];
 snow = struct('rx', [rxP rxS], 'zx',[zxP zxS], 'rSnow', ...
   rSnow, 'zSnow', zSnow, 'drSnow', drSnow, 'dzSnow', dzSnow, 'rSPP', ...
   rSPP, 'zSPP', zSPP, 'sSPP', sSPP, 'rSPS', rSPS, 'zSPS', zSPS, 'sSPS', ...
-  sSPS, 'sSP_heat', sSP_heat, 'snowType', snowType, 'psixPL',psixP, ....
+  sSPS, 'snowType', snowType, 'psixPL',psixP, ....
   'psixSL',psixS, 'snowPlus', snowPlus, 'rg', rg, 'zg', zg, 'psizr', psizr);
 
 

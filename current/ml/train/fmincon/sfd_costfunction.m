@@ -1,6 +1,6 @@
-function J = sfd_costfunction(xp,shot,time_ms,opts)
+function J = sfd_costfunction(xp,shot,time_ms,saveit)
 
-if nargin ~= 4, opts.savesim = 0; end
+if ~exist('saveit','var'), saveit = 0; end
 
 try 
 
@@ -9,10 +9,15 @@ try
   % --------------------
   eq = designeq_ml(xp,shot,time_ms);
   sim = heatsim_ml(eq,shot,time_ms);  
-  J = measure_cost(sim);
+  J = measure_cost4(sim);
+  
+  if saveit
+    save('eq','eq');
+    save('sim','sim');
+  end
   
 catch
-  J = 10;
+  J = 100;
   fprintf('Warning: simulation did not run')
 end
   

@@ -90,7 +90,7 @@ end
 %.....................................................................
 % Calculate the locations of 3 sample points centered around snowflake
 
-alpha0   = 0;
+alpha0   = pi/6;
 angleInc = (2*pi)/3;
 
 r1 = rExp + rhoExp*cos(alpha0);
@@ -104,6 +104,8 @@ z3 = zExp + rhoExp*sin(alpha0 + 2*angleInc);
 
 rVec = [r1; r2; r3];
 zVec = [z1; z2; z3];
+
+scatter(rVec,zVec,'filled');
 
 %.........................................
 % Calculate Br and Bz at the sample points

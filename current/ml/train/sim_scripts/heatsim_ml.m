@@ -57,25 +57,7 @@ psibry = eq.psibry;
 % Locate the snowflake in the lower divertor
 % ..........................................
 
-% get a good initial guess
-[r0,z0] = isoflux_xpFinder(psizr,1.15,-1.25,rg,zg); 
-
-% find the snowflake
-[rxPL, zxPL, rxSL, zxSL] = snowFinder(psizr, r0, z0, 0.1, rg, zg); 
-if rxPL < min(rg), rxPL = min(rg) + .04; end
-if rxSL < min(rg), rxSL = min(rg) + .04; end
-if zxPL < min(zg), zxPL = min(zg) + .04; end
-if zxSL < min(zg), zxSL = min(zg) + .04; end
-
-% zoom in on snowflake x-pts
-[rxPL, zxPL, psixPL] = isoflux_xpFinder(psizr, rxPL, zxPL, rg, zg);
-[rxSL, zxSL, psixSL] = isoflux_xpFinder(psizr, rxSL, zxSL, rg, zg);
-
-if abs(psixSL - psibry) < abs(psixPL - psibry)
-    swap(psixPL, psixSL);
-    swap(rxPL, rxSL);
-    swap(zxPL, zxSL);   
-end
+[rxPL, rxSL, zxPL, zxSL, psixPL, psixSL] = my_snowfinder(rg, zg, psizr, psibry);
     
 % determine the snowflake type
 snowPlus = false;
@@ -292,8 +274,6 @@ zentrO = interp1(psiperpO, zperpO, psiSOL);
 [rentrI, rentrO, zentrI, zentrO] = removeNans(rentrI, rentrO, zentrI, ...
     zentrO);
 
-% TAKE WARNING ^ ^: may need to ignore rz entrance that intersect shelf, vert
-
 % determine flux tube partitions
 idxInner = find(psiSOL > psixSL);  % flux tube MIGHT be between x-points
 idxOuter = setdiff(1:nSOL, idxInner); % flux tube outside x-pts
@@ -303,7 +283,7 @@ rzLine = zeros(length(idxInner),2);
 
 for ii = idxInner
     rzLine(ii,:) = isoflux_cpFinder(psizr, psiSOL(ii), rg, zg,...
-        [rxPL rxSL zxPL zxSL]);
+        [rxPL rxSL zxPL zxSL]*1.01);
 end
 
 psiperpX = psiSOL(idxInner);
@@ -311,7 +291,7 @@ rentrX = rzLine(:,1);
 zentrX = rzLine(:,2);
 
 % x-points are so close the psi-spacing is negligible ==> perfect snowflake
-if length(rentrX) < 1
+if length(rentrX) < 3
     perfectSnow = true;  
 else
     perfectSnow = false;
@@ -521,7 +501,7 @@ end
 % IR-based data
 
 % Load heat flux data q(s,t), s=distance along limiter, and t=time
-qperp_dir  = [root 'inputs/qperp/' num2str(shot) '/'];
+qperp_dir  = [root 'inputs/qperp/'];
 qperp_data = ['qperp_' num2str(shot) '.mat'];
 
 load([qperp_dir qperp_data])  % loads q, s, and t
@@ -639,14 +619,20 @@ if plotit
   xline(s45Deg1, '--k');
   xline(s45Deg2, '--k');
   
-  plot(sdivI, qdiv_perpI, '-or', 'LineWidth', 1, 'MarkerSize', 2)
-  plot(sdivO, qdiv_perpO, '-ob', 'LineWidth', 1, 'MarkerSize', 2)
+%   plot(sdivI, qdiv_perpI, '-or', 'LineWidth', 1, 'MarkerSize', 2)
+%   plot(sdivO, qdiv_perpO, '-ob', 'LineWidth', 1, 'MarkerSize', 2)
+%   if ~snowPlus && ~perfectSnow
+%     xline(sSPX, 'k');
+%     plot(sdivX, qdiv_perpX, '-og', 'LineWidth', 1, 'MarkerSize', 2)
+%   end
   
-  if ~snowPlus && ~perfectSnow
-    xline(sSPX, 'k');
-    plot(sdivX, qdiv_perpX, '-og', 'LineWidth', 1, 'MarkerSize', 2)
-  end
-  plot(s, qir*nansum(qmax)/nansum(qirmax), '-ok', 'LineWidth', 1, 'MarkerSize', 2)
+  plot(s, qir/nansum(qirmax), '-ok', 'LineWidth', 1, 'MarkerSize', 2)
+
+  s = [sdivI sdivX sdivO];
+  q = [qdiv_perpI; qdiv_perpX; qdiv_perpO];
+  plot(s,q/nansum(qmax), '-r', 'linewidth', 2)
+  set(gcf,'position',[431 504 577 188])
+  
 end
 
 

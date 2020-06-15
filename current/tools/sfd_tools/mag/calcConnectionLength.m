@@ -58,13 +58,13 @@ ns = L(1)/ds;
 
 % Define the fieldline length integration variable
 for k = 1:n
-    
     r = r0(k);
     z = z0(k);
     s0 = 0; 
-
+    
+    
     for ii = 1:ns
-
+        
         [~, dpsidr, dpsidz] = bicubicHermite(rg, zg, psizr, r, z);
 
         Br = -1/(2*pi*r)*dpsidz;
@@ -98,7 +98,6 @@ for k = 1:n
         end
 
     end
-
 end
 
 
