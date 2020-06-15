@@ -11,8 +11,6 @@ dum = load('args');
 
 % load and simulate
 efit_dir = '/p/omfit/users/jwai/projects/155354_efits/EFITtime/OUTPUTS/gEQDSK';
-% cakedir = [root 'inputs/eqs/cake/' num2str(shot)];
-
 
 efit_eq1 = read_eq(shot, time_ms/1000, efit_dir);
 efit_sim1 = heatsim_ml(efit_eq1.gdata,shot,time_ms);

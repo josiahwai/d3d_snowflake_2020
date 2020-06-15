@@ -67,7 +67,7 @@ pkthresh = 1.5*median(qperp);
   'minpeakheight', pkthresh, 'minpeakprominence', pkthresh);
 
 % estimate strike point as location where qperp = 3/4*q_peak on inbd side
-[~,k] = min(abs(qperp(ix(1:ipkx)) - 3/4*qpkx));
+[~,k] = min(abs(qperp(ix(1:ipkx)) - 0.85*qpkx));
 sspx = s(ix(k));
 
 if isempty(sspx), sspx = nan; end
@@ -136,9 +136,13 @@ if plotit
   figure(19)
   clf
   hold on
-  plot(s,qperp,'.k')
-  plot(s, fiti(s),'r','linewidth', 1.5)
-  plot(s, fito(s), 'g', 'linewidth', 1.5)
+  plot( s_nogap, qperp,'.k')
+%   plot(s, fiti(s),'r','linewidth', 1.5)
+%   plot(s, fito(s), 'g', 'linewidth', 1.5)
+  
+  plot( s_nogap(ii), fiti(s_nogap(ii)), 'r', 'linewidth', 1.5)
+  plot( s_nogap(io), fito(s_nogap(io)), 'g', 'linewidth', 1.5)
+  
   xline(sspi);
   if ~isnan(sspx), xline(sspx); end
   xline(sspo);

@@ -13,8 +13,8 @@ rmax = min(rg) + .7*(max(rg) - min(rg));
 zmin = min(zg) + e;
 zmax = min(zg) + .3*(max(zg) - min(zg)); 
 
-rx0 = linspace(rmin,rmax,8);
-zx0 = linspace(zmin,zmax,8);
+rx0 = linspace(rmin,rmax,20);
+zx0 = linspace(zmin,zmax,20);
 [rx0,zx0] = meshgrid(rx0,zx0);
 
 % search for x-pts

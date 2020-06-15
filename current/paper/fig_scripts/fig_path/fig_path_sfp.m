@@ -1,11 +1,13 @@
 % ========
 % SETTINGS
 % ========
-shot = 155354;
-time_ms = 3727;
+shot = 155328;
+time_ms = 2830;
 saveit = 0;
-simdir = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/155354_3727/';
-% simdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/155328_sfp/2830/';
+% simdir = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/155354_3727/';
+simdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/155328_sfp/2398/';
+% simdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/155328_sfp_constrain_sp/2398/';
+
 plot_efit = 0;
 
 % Load stuff
@@ -142,16 +144,14 @@ yticks(-1.4:0.1:-1)
 xticks(1:0.1:1.4)
 set(gca,'TickDir','in'); 
 
-rsp = [rSPP(1:2) rSPS([2 4])];
-zsp = [zSPP(1:2) zSPS([2 4])];
+rsp = rSPP([1 end]);
+zsp = zSPP([1 end]);
 plot(rsp, zsp, 'o', 'color', orange, 'Markersize', 2, 'LineWidth', 3)
 scatter(rsp, zsp, 40, 'filled', 'markerfacecolor', orange)
 
 t1 = text(rsp(1) -.05, zsp(1),      'SP1');
-t2 = text(rsp(2) -.05,  zsp(2)-.008, 'SP2');
-t3 = text(rsp(3) -.04,  zsp(3)-.012, 'SP3');
-t4 = text(rsp(4) -.015, zsp(4)-.02,  'SP4');
-set([t1 t2 t3 t4], 'fontweight', 'bold', 'color', orange);
+t2 = text(rsp(2) -.015, zsp(2)-.02,  'SP2');
+set([t1 t2], 'fontweight', 'bold', 'color', orange);
 
 title( [num2str(shot) ': ' num2str(time_ms) 'ms'], 'fontsize', 11, ...
   'fontweight', 'bold')
@@ -199,16 +199,15 @@ plot(sir,qir,'k','linewidth',1.5)
 plot(s, q, 'color', blue, 'linewidth', 1.5)
 
 % find and plot strike points
-ssp = [snow0.sSPP(1) 1e6 nan snow0.sSPS(end)];
-ef.ssp = double(ef.ssp);
-ef.ssp = [ef.ssp(1:2) nan ef.ssp(3)];
+ssp = snow0.sSPP;
+ef.ssp = double(ef.ssp([1 3]));
 
-for i = [1 2 4]
+for i = 1:2
   xline(ef.ssp(i)*100, '--', 'Color', 'k', 'linewidth', 1);
   xline(ssp(i)*100, '--', 'Color', blue, 'linewidth', 1);
   
-  text(min(ef.ssp(i), ssp(i))*100 - 6, 0.6, ['SP' num2str(i)], ...
-    'fontweight', 'bold')
+%   text(min(ef.ssp(i), ssp(i))*100 - 6, 0.6, ['SP' num2str(i)], ...
+%     'fontweight', 'bold')
 end
 
 
@@ -242,8 +241,6 @@ hold on
 struct_to_ws(sims{min(10,end)});
 sir = sir*100; % [m] to [cm]
 
-ef = eich_fitter(sir, qir, eqs{end}, tok_data_struct);
-
 % normalize heat flux
 qir = qir /nansum(qirmax); % normalize so that sum(pks) = 1
 
@@ -261,16 +258,14 @@ plot(sir,qir,'k','linewidth',1.5)
 plot(s, q, 'color', orange, 'linewidth', 1.5)
 
 % find and plot strike points
-ssp = [snow1.sSPP(1:2) nan snow1.sSPS(end)];
-ef.ssp = double(ef.ssp);
-ef.ssp = [ef.ssp(1:2) nan ef.ssp(3)];
+ssp = snow1.sSPP;
 
-for i = [1 2 4]
+for i = 1:2
   xline(ef.ssp(i)*100, '--', 'Color', 'k', 'linewidth', 1);
   xline(ssp(i)*100, '--', 'Color', orange, 'linewidth', 1);
   
-  text(min(ef.ssp(i), ssp(i))*100 - 6, 0.6, ['SP' num2str(i)], ...
-    'fontweight', 'bold')
+%   text(min(ef.ssp(i), ssp(i))*100 - 6, 0.6, ['SP' num2str(i)], ...
+%     'fontweight', 'bold')
 end
 
 % plot formatting

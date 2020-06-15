@@ -22,15 +22,24 @@ zg = eq.zg;
 
 plot(limdata(2,:), limdata(1,:), 'Color', [0.5 0.5 0.5], 'LineWidth', 3)
 hold on
-contour(rg,zg,psizr,[psixPL psixPL], 'b', 'linewidth', 1);
-contour(rg,zg,psizr,[psixSL psixSL], 'b', 'linewidth', 1);
+c = 'b';
+contour(rg,zg,psizr,[psixPL psixPL], 'color', c, 'linewidth', 1);
+contour(rg,zg,psizr,[psixSL psixSL], 'color', c, 'linewidth', 1);
 
 axis equal
-% axis([1.0 1.5 -1.4 -0.9])
+axis([1.0 1.5 -1.45 -0.95])
 xlabel('R [m]')
 ylabel('Z [m]')
     
     
+% Colorcode
+rv = [1.016 1.016 1.153 1.42 1.42 1.372 1.372 1.768];
+zv = [-0.83 -1.223 -1.363 -1.363 -1.329 -1.329 -1.25 -1.25 -1.25];
+nv = length(rv);
+cmap = colormap(lines);
+for i = 1:nv-1
+  plot( rv(i:i+1), zv(i:i+1), 'color', cmap(i,:), 'linewidth', 3)
+end
     
     
     

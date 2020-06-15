@@ -1,38 +1,38 @@
-% Finds the thermal diffusivity chi and scrape off layer power
-% decay lengths lambdaq for the inboard and outboard divertor. Takes an
-% average over the whole shot. Params are found from the eich profile
+% Same as find_sol_params, but appends to previously saved struct
+% since not all cases were included when run the first time
 
-% lambdaq in [cm], chi in Wb^2/s
+clear; clc; close all
 
-% function [lambdaq_i, lambdaq_o, chi_i, chi_o] = find_sol_params(shot)
-shotlist = 155344:155355;
+shotlist = 155330:2:155354;
+saveit = 1;
+plotit = 0;
+
+load('d3d_obj_mks_struct_6565.mat')
+root = '/u/jwai/d3d_snowflake_2020/current/';
+
+valid_times = [];
+
 for iShot = 1:length(shotlist)
 try
   shot = shotlist(iShot);
-  saveit = 1;
-  plotit = 0;
-  
+  shot
   coeff = [];
-  load('d3d_obj_mks_struct_6565.mat')
   
   % load heat flux
-  root = '/u/jwai/d3d_snowflake_2020/current/';
-  qperp_dir  = [root 'inputs/qperp/'];
-  qperp_data = ['qperp_' num2str(shot) '.mat'];
-  load([qperp_dir qperp_data])  % loads q, s, and t
+  load(['qperp_std_' num2str(shot) '.mat'])
   t = double(t);
   
   
   for iTime = 1:length(t)
     try
-      time_ms = t(iTime)
+      time_ms = t(iTime);
       q = qperp(iTime,:)';
       
       % load eq and calculate flux expansion
-      eqdir = [root 'inputs/eqs/cake/' num2str(shot)];
-      eq = read_eq(shot, time_ms/1000, eqdir);
+      eqdir = [root 'inputs/eqs/cakes_early_t/'];
+      try eq = read_eq(shot, time_ms/1000, eqdir); catch; end
       
-      iX = find(s > 115 & s < 145);
+      iX = find(s > 125 & s < 145);
       snowPlus = 1;
       if max(q(iX)) > 3 * median(q), snowPlus = 0; end
       
@@ -40,9 +40,11 @@ try
       
       % sanity checks on the fit
       if (ef.gofi.rsquare > 0.7) && (ef.gofo.rsquare > 0.7) && ...
-          (ef.fito.lambdaQ > .1) && (ef.fito.q0 < 1000)
+          (ef.fito.lambdaQ > .05) && (ef.fito.q0 < 1000)
         
         coeff = [coeff; ef.fiti.lambdaQ ef.fito.lambdaQ ef.chi_i ef.chi_o snowPlus];
+        valid_times = [valid_times; time_ms];
+        
       else
         warning('on', 'all')
         warning('Fit quality low. Skipping time slice...')
@@ -57,18 +59,18 @@ try
   end
   
   
-  % iOutliers = sum(isoutlier(coeff),2);
-  % avg_coeff = mean(coeff(~iOutliers,:));
+  
+  
   avg_coeff = mean(coeff);
   
   [lambdaq_i, lambdaq_o, chi_i, chi_o] = unpack(avg_coeff);
   
   sol_params = struct('lambdaq_i', lambdaq_i, 'lambdaq_o', lambdaq_o, ...
-    'chi_i', chi_i, 'chi_o', chi_o, 'coeff', coeff)
+    'chi_i', chi_i, 'chi_o', chi_o, 'coeff', coeff, 'times', valid_times);
   
   if saveit
-    savedir = '/u/jwai/d3d_snowflake_2020/current/eich/sol_params/';
-    fn = [savedir 'sol_params_' num2str(shot) '.mat'];
+    savedir = '/u/jwai/d3d_snowflake_2020/current/eich/sol_params/early_times/';
+    fn = [savedir 'sol_params_et_' num2str(shot) '.mat'];
     save(fn, 'sol_params');
   end
   

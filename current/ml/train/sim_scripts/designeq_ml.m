@@ -15,7 +15,7 @@ if ~exist('opts','var'), opts.constrain_sp = 0; end
 
 persistent iter
 if isempty(iter), iter = 0; end
-if iter == 0, clear spec config gsdesign; end
+if iter == 0, clear init spec config gsdesign; end
 iter = iter + 1;
 
 root = '/u/jwai/d3d_snowflake_2020/current/';
