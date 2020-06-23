@@ -16,14 +16,14 @@ limdata = tok_data_struct.limdata;
 psizr = eq.psizr;
 rg = eq.rg';
 zg = eq.zg;
-[psizr, rg, zg] = regrid(rg, zg, psizr, 257, 257);
+[psizr, rg, zg] = regrid(rg, zg, psizr, 600, 600);
 
 [~,~,~,~, psixPL, psixSL] = my_snowfinder(rg, zg, psizr, eq.psibry);
 
 plot(limdata(2,:), limdata(1,:), 'Color', [0.5 0.5 0.5], 'LineWidth', 3)
 hold on
 c = 'b';
-contour(rg,zg,psizr,[psixPL psixPL], 'color', c, 'linewidth', 1);
+contour(rg,zg,psizr,[psixPL psixPL], 'color', c, 'linewidth', 1.5);
 contour(rg,zg,psizr,[psixSL psixSL], 'color', c, 'linewidth', 1);
 
 axis equal
@@ -40,7 +40,7 @@ cmap = colormap(lines);
 for i = 1:nv-1
   plot( rv(i:i+1), zv(i:i+1), 'color', cmap(i,:), 'linewidth', 3)
 end
-    
+%     
     
     
     

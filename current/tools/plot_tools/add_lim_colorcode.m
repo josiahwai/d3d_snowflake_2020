@@ -19,7 +19,7 @@ limdata = tok_data_struct.limdata;
 sLimTot = calcLimDistance(limdata(2,1), limdata(1,1), limdata);
 
 sv = sLimTot - calcLimDistance(rv, zv, limdata);
-sv = sv*100;
+% sv = sv*100;
 
 figure(fignum)
 hold on

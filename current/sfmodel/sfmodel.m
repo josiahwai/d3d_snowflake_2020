@@ -10,7 +10,7 @@ dum = load('args');
 % 155355: .006, .002, 0.07, 0.02
 
 lambdaq_i = .0063;
-lambdaq_o = .0023;
+lambdaq_o = .0018;
 chi_i = .1;
 chi_o = .03;
 

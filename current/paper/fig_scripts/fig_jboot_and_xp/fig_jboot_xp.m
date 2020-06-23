@@ -1,4 +1,4 @@
-clear; close all
+% clear; close all
 % ========
 % SETTINGS
 % ========
@@ -6,13 +6,16 @@ use_sfm = 1;
 use_sfp = 0;
 use_sfp_sp = 1;
 
-saveit = 1;
+saveit = 0;
+
+load('sim_data2.mat')
+struct_to_ws(sim);
+
+
 
 % ================================
 % Linear regression on jpar, dxp
 % ================================
-load('sim.mat')
-struct_to_ws(sim);
 
 i_sfp_sp = find(i_snowtype == 1);
 i_sfp = find(i_snowtype == 2);
@@ -67,6 +70,9 @@ axis( 1.05*[ymin ymax ymin ymax])
 
 legend( 'Snowminus', 'Snowplus')
 text( 0.1, 0.9, ['Explained variance: ' num2str(floor(explained_variance*100)) '%'], 'units', 'normalized')
+ 
+% dj1 = jf - cake_j0;
+% dj = dj - dj1;
 
 % jboot
 figure
@@ -85,6 +91,25 @@ ylim([-1.5 1]*1e6)
 title('Snowplus')
 xlabel('psi')
 ylabel('\Delta j')
+
+
+% jboot
+figure
+hold on
+subplot(2,1,1)
+plot( psin, jf(i_sfm,:), 'r')
+ylabel('j_{final}')
+% xlim([0.8 1])
+ylim([-0.3 2]*1e6)
+title('Snowminus')
+
+subplot(2,1,2)
+plot( psin, jf(i_sfp_sp,:), 'g')
+% xlim([0.8 1])
+ylim([-0.3 2]*1e6)
+title('Snowplus')
+xlabel('psi')
+ylabel('j_{final}')
 
 
 

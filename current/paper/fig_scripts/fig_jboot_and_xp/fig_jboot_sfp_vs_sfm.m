@@ -31,8 +31,13 @@ for shot = shotlist
   i_sfm = [i_sfm sort(j)];
 end
 
-j_sfp = j0max(i_sfp_sp);
-j_sfm = j0max(i_sfm);
+% ================
+% PLOT FINAL JBOOT
+% ================
+j_sfp = jfmax(i_sfp_sp);
+j_sfm = jfmax(i_sfm);
+
+std_dev = sqrt(var(jfmax([i_sfp_sp i_sfm])))
 
 disp(['Mean jboot in snowplus: ' num2str(floor(mean(j_sfp)))])
 disp(['Mean jboot in snowminus: ' num2str(floor(mean(j_sfm)))])
@@ -44,19 +49,18 @@ subplot(1,2,1)
 hold on
 bar(j_sfp)
 ylim([0 ymax])
-title('SFD+')
+title('J Final SFD+')
 xlabel('Slice index')
 ylabel('J [A/m^2]')
 yline(mean(j_sfp), 'r', 'linewidth', 2);
 text( 0.1, 0.9, ['Mean: ' num2str(floor(mean(j_sfp)))], 'units', 'normalized')
 
 
-
 subplot(1,2,2)
 hold on
 bar(j_sfm)
 ylim([0 ymax])
-title('SFD-')
+title('J Final SFD-')
 xlabel('Slice index')
 ylabel('J [A/m^2]')
 yline(mean(j_sfm), 'r', 'linewidth', 2);
@@ -66,6 +70,43 @@ set(gcf,'position', [308 261 910 424])
 
 
 
+
+% ================
+% PLOT INITIAL JBOOT
+% ================
+j_sfp = j0max(i_sfp_sp);
+j_sfm = j0max(i_sfm);
+
+std_dev = sqrt(var(jfmax([i_sfp_sp i_sfm])))
+
+disp(['Mean jboot in snowplus: ' num2str(floor(mean(j_sfp)))])
+disp(['Mean jboot in snowminus: ' num2str(floor(mean(j_sfm)))])
+
+
+ymax = max([j_sfp j_sfm]);
+figure
+subplot(1,2,1)
+hold on
+bar(j_sfp)
+ylim([0 ymax])
+title('J Initial SFD+')
+xlabel('Slice index')
+ylabel('J [A/m^2]')
+yline(mean(j_sfp), 'r', 'linewidth', 2);
+text( 0.1, 0.9, ['Mean: ' num2str(floor(mean(j_sfp)))], 'units', 'normalized')
+
+
+subplot(1,2,2)
+hold on
+bar(j_sfm)
+ylim([0 ymax])
+title('J Initial SFD-')
+xlabel('Slice index')
+ylabel('J [A/m^2]')
+yline(mean(j_sfm), 'r', 'linewidth', 2);
+text( 0.1, 0.9, ['Mean: ' num2str(floor(mean(j_sfm)))], 'units', 'normalized')
+
+set(gcf,'position', [308 261 910 424])
 
 
 

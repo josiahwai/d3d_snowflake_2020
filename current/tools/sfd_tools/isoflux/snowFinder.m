@@ -105,7 +105,7 @@ z3 = zExp + rhoExp*sin(alpha0 + 2*angleInc);
 rVec = [r1; r2; r3];
 zVec = [z1; z2; z3];
 
-scatter(rVec,zVec,'filled');
+% scatter(rVec,zVec,'filled');
 
 %.........................................
 % Calculate Br and Bz at the sample points

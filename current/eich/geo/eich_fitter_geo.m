@@ -1,4 +1,6 @@
 % Fits the eich profile to the heat flux data and finds the strike points
+%         Takes the shadowing effect into account by cutting off a larger
+%         portion of s
 %
 % INPUTS: s - distance along limiter, qperp - heat flux profile versus 
 %         position (s), eq - equilibrium, tok_data_struct - tokamak
@@ -9,11 +11,11 @@
 %         inner and outer fits for the eich profile with coefficient
 %         information as defined in ref. 
 %
-% ref: T. Eich, "?Scaling of the tokamak near the scrape-off layer H-mode 
-%      power width and implications for ITER
+% ref: T. Eich, "Scaling of the tokamak near the scrape-off layer H-mode 
+%      power width and implications for ITER"
 
 
-function eichfit = eich_fitter(s, qperp, eq, ...
+function eichfit = eich_fitter_geo(s, qperp, eq, ...
   tok_data_struct, plotit)
 
 if ~exist('plotit','var'), plotit = 0; end
@@ -34,40 +36,51 @@ snow = analyzeSnowflake(eq);
 
 % index of heat flux regions (inner, outer, middle)
 if size(s,2) ~= 1, s = s'; end
-ii = find(s<120);
-io = find(s>145);
-ix = find(s>=120 & s<=145);
+
+s_shelftop = 184.7;
+s_shelfbot = 163.8;
+ds = s_shelftop - s_shelfbot;
+
+iuse = s <= s_shelfbot | s >= s_shelftop;
+
+s_geo = s;
+q_geo = qperp;
+s_geo(~iuse) = [];
+for i = 1:length(s_geo)
+  if s_geo(i) >= s_shelftop
+    s_geo(i) = s_geo(i) - ds;
+  end
+end
+q_geo(~iuse) = [];
+
+ii = find(s_geo < 120);
+io = find(s_geo > 145);
+ix = find( s_geo >= 120 & s_geo <= 145);
+
 
 % fit the outer peak to find strike pt
 % ....................................
 
-% outer region has a gap from geometry that shadows heat flux
-% remove the gap before fitting the eich profile
-iGap = find(s < 170,1,'last');
-dgap = s(iGap+1) - s(iGap);
-s_nogap = s;
-s_nogap(iGap(end)+1:end) = s_nogap(iGap(end)+1:end) - dgap;
-
 ft = fittype(eichfun_o);
 options = fitoptions(ft);
 
-options.StartPoint = [max(qperp(io)) 0.2 0.3 fexpo 160 4];
+options.StartPoint = [max(q_geo(io)) 0.2 0.3 fexpo 160 4];
 options.Lower = [0 0 0 fexpo 0 0]; 
 options.Upper = [inf inf inf fexpo inf inf];  % lock flux expansion
 
-[fito, gofo] = fit(s_nogap(io), qperp(io), ft, options);
+[fito, gofo] = fit(s_geo(io), q_geo(io), ft, options);
 sspo =  fito.s0;
 
 
 % fit the middle peak, if the peak is there
 % .........................................
-pkthresh = 1.5*median(qperp);
+pkthresh = 3*median(qperp);
 
-[qpkx,ipkx] = findpeaks(qperp(ix), 'NPeaks',1,'sortstr','descend',...
+[qpkx,ipkx] = findpeaks(q_geo(ix), 'NPeaks',1,'sortstr','descend',...
   'minpeakheight', pkthresh, 'minpeakprominence', pkthresh);
 
 % estimate strike point as location where qperp = 3/4*q_peak on inbd side
-[~,k] = min(abs(qperp(ix(1:ipkx)) - 0.85*qpkx));
+[~,k] = min(abs(q_geo(ix(1:ipkx)) - 0.85*qpkx));
 sspx = s(ix(k));
 
 if isempty(sspx), sspx = nan; end
@@ -77,7 +90,7 @@ if isempty(sspx), sspx = nan; end
 % ....................................
 ft = fittype(eichfun_i);
 options = fitoptions(ft);
-options.StartPoint = [max(qperp(ii)) 1 0.6 fexpi 100];
+options.StartPoint = [max(q_geo(ii)) 1 0.6 fexpi 100];
 options.Lower = [0 0 0 fexpi 0];
 options.Upper = [inf inf inf fexpi inf];
 
@@ -132,24 +145,34 @@ eichfit = struct('rsp', rsp, 'zsp', zsp, 'ssp', ssp, 'chi_i', chi_i, ...
   'chi_o', chi_o, 'qpks', qpks, 'fiti', fiti, 'fito', fito, 'gofi', ...
   gofi, 'gofo', gofo);
 
+
 if plotit
-  figure(19)
+  figure(199)
   clf
   hold on
   plot( s, qperp,'.k')
-%   plot(s, fiti(s),'r','linewidth', 1.5)
-%   plot(s, fito(s), 'g', 'linewidth', 1.5)
   
-  plot( s_nogap(ii), fiti(s_nogap(ii)), 'r', 'linewidth', 1.5)
-  plot( s_nogap(io), fito(s_nogap(io)), 'g', 'linewidth', 1.5)
+  % plot inner
+  plot( s_geo(ii), fiti(s_geo(ii)), 'r', 'linewidth', 1.5)
+ 
+  % restore the gap and plot outer
+  q_fito = fito(s_geo(io));
+  s_fito = s_geo(io);  
+  for i = 1:length(s_fito)
+    if s_fito(i) > s_shelfbot
+      s_fito(i) =s_fito(i) + ds;
+    end
+  end
+  
+  plot( s_fito, q_fito, 'g', 'linewidth', 1.5)   
   
   xline(sspi);
-  if ~isnan(sspx), xline(sspx); end
+  if ~isnan(sspx), xline(sspx, 'b', 'linewidth', 2); end
   xline(sspo);
   
-  add_lim_colorcode(19)
-  xlim([84 213])
-  set(gcf,'position', [680 608 560 272])
+%   add_lim_colorcode(199)
+%   xlim([84 213])
+%   set(gcf,'position', [680 608 560 272])
 end
 
 end

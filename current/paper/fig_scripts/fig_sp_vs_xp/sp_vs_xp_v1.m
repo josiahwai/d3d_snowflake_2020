@@ -5,7 +5,7 @@
 % ========
 clear 
 close all
-saveit = 0;
+saveit = 1;
 topdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/';
 
 % =================================
@@ -69,34 +69,46 @@ dx2 = mean( sqrt( sum( ddxp(:,[2 4]).^2, 2)));
 
 figure
 
-subplot(2,2,1)
+dxp_sp = dxp_sp*100;
+dxp_xp = dxp_xp*100;
+
+subplot(1,2,1)
 hold on
-title('SP Constrained')
-scatter(dxp_sp(:,1), dxp_sp(:,3), 15, 'filled', 'r')
-scatter(dxp_sp(:,2), dxp_sp(:,4),  15, 'filled', 'b')
+title('Strike-Point-Constrained')
+scatter(dxp_sp(:,1), dxp_sp(:,3), 15, 'r')
+scatter(dxp_sp(:,2), dxp_sp(:,4),  15, 'b')
+xline(0, '--k');
+yline(0, '--k');
+axis([-.06 .04 -.03 .1]*100)
+xticks(-4:4:4)
+yticks(-8:4:12)
+xlabel('\Deltar [cm]')
+ylabel('\Deltaz  [cm]')
+legend('\Deltaxp_1', '\Deltaxp_2', 'location', 'northwest')
 
 
-subplot(2,2,2)
+subplot(1,2,2)
 hold on
-title('XP Constrained')
-scatter(dxp_xp(:,1), dxp_xp(:,3), 15, 'filled', 'r')
-scatter(dxp_xp(:,2), dxp_xp(:,4),  15, 'filled', 'b')
+title('X-Point-Constrained')
+scatter(dxp_xp(:,1), dxp_xp(:,3), 15,  'r')
+scatter(dxp_xp(:,2), dxp_xp(:,4),  15, 'b')
+xline(0, '--k');
+yline(0, '--k');
+axis([-.05 .05 -.03 .1]*100)
+xticks(-4:4:4)
+yticks(-8:4:12)
+xlabel('\Deltar [cm]')
+ylabel('\Deltaz  [cm]')
 
-subplot(2,2,3)
-hold on
-title('Diff')
-scatter( dxp_xp(:,1) - dxp_sp(:,1), dxp_xp(:,3) - dxp_sp(:,3),  15, 'filled', 'r')
-scatter( dxp_xp(:,2) - dxp_sp(:,2), dxp_xp(:,4) - dxp_sp(:,4),  15, 'filled', 'b')
+set(gcf,'position', [718 461 600 239])
 
-for i = 1:3
-  subplot(2,2,i)
-  xline(0);
-  yline(0);
-  box on
-  axis([-.05 .05 -.03 .1])
-end
-subplot(2,2,1)
-legend('Primary', 'Secondary', 'location', 'southeast')
+% subplot(2,2,3)
+% hold on
+% title('Diff')
+% scatter( dxp_xp(:,1) - dxp_sp(:,1), dxp_xp(:,3) - dxp_sp(:,3),  15, 'filled', 'r')
+% scatter( dxp_xp(:,2) - dxp_sp(:,2), dxp_xp(:,4) - dxp_sp(:,4),  15, 'filled', 'b')
+
+
 
 
 if saveit
