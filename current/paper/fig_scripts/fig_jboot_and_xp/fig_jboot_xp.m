@@ -3,8 +3,8 @@
 % SETTINGS
 % ========
 use_sfm = 1;
-use_sfp = 0;
-use_sfp_sp = 1;
+use_sfp = 1;
+use_sfp_sp = 0;
 
 saveit = 0;
 
@@ -17,9 +17,13 @@ struct_to_ws(sim);
 % Linear regression on jpar, dxp
 % ================================
 
-i_sfp_sp = find(i_snowtype == 1);
-i_sfp = find(i_snowtype == 2);
-i_sfm = find(i_snowtype == 3);
+% i_sfp_sp = find(i_snowtype == 1);
+% i_sfp = find(i_snowtype == 2);
+% i_sfm = find(i_snowtype == 3);
+
+i_sfp_sp = find(i_snowtype == 1 & shots == 155354);
+i_sfp = find(i_snowtype == 2  & shots == 155354);
+i_sfm = find(i_snowtype == 3 & shots == 155354);
 
 iUse = [];
 if use_sfm, iUse = [iUse i_sfm]; end

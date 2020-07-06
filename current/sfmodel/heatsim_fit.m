@@ -132,10 +132,10 @@ BTotMid = sqrt(BpMid*BpMid + BtMid*BtMid);
 % create 1D grid for SOL
 nSOL = 100; % number of grid pts
 
-rSOLMid_o = linspace(rmid + 5e-5, rmid + 5e-5 + 3*lambdaq_o, nSOL)';
+rSOLMid_o = linspace(rmid + 5e-5, rmid + 5e-5 + 4*lambdaq_o, nSOL)';
 psiSOL_o = interp2(rg, zg, psizr, rSOLMid_o, zmid);
 
-rSOLMid_i = linspace(rmid + 5e-5, rmid + 5e-5 + 3*lambdaq_i, nSOL)';
+rSOLMid_i = linspace(rmid + 5e-5, rmid + 5e-5 + 4*lambdaq_i, nSOL)';
 psiSOL_i = interp2(rg, zg, psizr, rSOLMid_i, zmid);
 
 

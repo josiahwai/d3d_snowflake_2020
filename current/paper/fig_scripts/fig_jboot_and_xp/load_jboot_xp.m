@@ -111,9 +111,10 @@ sim.presf = presf;
 sim.dpres = dpres;
 sim.cake_j0 = cake_j0;
 
+
 if saveit
   savedir = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_jboot_and_xp/';
-  save(  [savedir 'sim_data2'], 'sim');
+  save(  [savedir 'sim_data3'], 'sim');
 end
 
 

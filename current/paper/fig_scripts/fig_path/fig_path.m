@@ -23,18 +23,34 @@ load([simdir 'sims.mat'])
 blue = [20 108 191]/255;
 orange = [198 68 26]/255;
 
+% % Define plot axes
+% figure(10)
+% spc = .07;
+% h1 = 0.4;
+% h2 = 0.18;
+% h3 = 1 - h1 - h2 - spc*4;
+% 
+% ax1 = axes('Position', [0.16 1.02-h1-spc   0.8   h1]); 
+% ax2 = axes('Position', [0.16 1.9*spc+h3   0.8   h2]); 
+% ax3 = axes('Position', [0.16 1.1*spc        0.8   h3]); 
+% 
+% set(gcf, 'position', [585 -111 453 811])
+% box(ax1,'on')
+% box(ax2,'on')
+% box(ax3,'on')
+
 % Define plot axes
 figure(10)
-spc = .07;
+spc = .06;
 h1 = 0.4;
-h2 = 0.18;
-h3 = 1 - h1 - h2 - spc*4;
+h2 = (1 - h1 - spc*4 - .03) / 2;
+h3 = h2;
 
-ax1 = axes('Position', [0.16 1.02-h1-spc   0.8   h1]); 
-ax2 = axes('Position', [0.16 1.9*spc+h3   0.8   h2]); 
-ax3 = axes('Position', [0.16 1.1*spc        0.8   h3]); 
+ax1 = axes('Position', [0.16 1.02-h1-spc      0.8   h1]); 
+ax2 = axes('Position', [0.16 2*spc+h3 + .01   0.8   h2]); 
+ax3 = axes('Position', [0.16 spc + .01        0.8   h3]); 
 
-set(gcf, 'position', [585 -111 453 811])
+set(gcf, 'position', [585 111 453 720])
 box(ax1,'on')
 box(ax2,'on')
 box(ax3,'on')
@@ -54,6 +70,8 @@ plot(rlim, zlim, 'Color', [0.5 0.5 0.5], 'LineWidth', 3)
 % plot initial eq
 % ...............
 eq0 = eqs{1};
+struct_to_ws(eq0.gdata);
+clear xlim ylim
 snow0 = analyzeSnowflake(eq0);
 struct_to_ws(snow0);
 [zxP, zxS] = unpack(snow0.zx);
@@ -86,6 +104,8 @@ plot(rx, zx, 'x','Color',blue, 'Markersize', 15, 'LineWidth', 4)
 % plot final eq
 % .............
 eq1 = eqs{end};
+struct_to_ws(eq1);
+clear xlim ylim
 snow1 = analyzeSnowflake(eq1);
 struct_to_ws(snow1);
 [zxP, zxS] = unpack(zx);
@@ -238,10 +258,11 @@ axes(ax3)
 cla
 hold on
 
-% fit eich profile
-struct_to_ws(sims{min(10,end)});
-sir = sir*100; % [m] to [cm]
+% Load sim
+% struct_to_ws(sims{min(10,end)});
+load('sim_tf'); struct_to_ws(sim);
 
+sir = sir*100; % [m] to [cm]
 ef = eich_fitter(sir, qir, eqs{end}, tok_data_struct);
 
 % normalize heat flux

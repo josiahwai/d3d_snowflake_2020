@@ -36,14 +36,20 @@ iuse = find(zx < zmax & zx > zmin & rx > rmin & rx < rmax);
 rxzx = uniquetol([rx(iuse)' zx(iuse)'], .005, 'ByRows',true);
 
 [psix, psix_r, psix_z] = bicubicHermite(rg,zg,psizr,rxzx(:,1), rxzx(:,2));
-[~,k] = mink(psix_r.^2 + psix_z.^2, 2); % take the best 2, if there's > 2
 
-% reorder primary, secondary x-pts if necessary
-if abs(psix(k(2))-psibry) < abs(psix(k(1))-psibry), k = flip(k); end
+% only search among pts that are actually x-pts (grad psi == 0)
+tol = .001;
+igood = find(abs(psix_r.^2 + psix_z.^2) < tol);
 
-[psixP, psixS] = unpack(psix(k));
-[rxP, rxS] = unpack(rxzx(k,1));
-[zxP, zxS] = unpack(rxzx(k,2));
+[~,k] = mink( abs(psix(igood)-psibry), 2); % take the best 2, if there's > 2
+ibest = igood(k);
+
+% % reorder primary, secondary x-pts if necessary
+% if abs(psix(k(2))-psibry) < abs(psix(k(1))-psibry), k = flip(k); end
+
+[psixP, psixS] = unpack(psix(ibest));
+[rxP, rxS] = unpack(rxzx(ibest,1));
+[zxP, zxS] = unpack(rxzx(ibest,2));
 
 end
 

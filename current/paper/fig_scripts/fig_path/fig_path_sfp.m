@@ -1,11 +1,11 @@
 % ========
 % SETTINGS
 % ========
-shot = 155328;
-time_ms = 2830;
-saveit = 0;
+shot = 155336;
+time_ms = 2700;
+saveit = 1;
 % simdir = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/155354_3727/';
-simdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/155328_sfp/2398/';
+simdir = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/155336_2697/';
 % simdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/155328_sfp_constrain_sp/2398/';
 
 plot_efit = 0;
@@ -27,16 +27,16 @@ orange = [198 68 26]/255;
 
 % Define plot axes
 figure(10)
-spc = .07;
+spc = .06;
 h1 = 0.4;
-h2 = 0.18;
-h3 = 1 - h1 - h2 - spc*4;
+h2 = (1 - h1 - spc*4 - .03) / 2;
+h3 = h2;
 
-ax1 = axes('Position', [0.16 1.02-h1-spc   0.8   h1]); 
-ax2 = axes('Position', [0.16 1.9*spc+h3   0.8   h2]); 
-ax3 = axes('Position', [0.16 1.1*spc        0.8   h3]); 
+ax1 = axes('Position', [0.16 1.02-h1-spc      0.8   h1]); 
+ax2 = axes('Position', [0.16 2*spc+h3 + .01   0.8   h2]); 
+ax3 = axes('Position', [0.16 spc + .01        0.8   h3]); 
 
-set(gcf, 'position', [585 -111 453 811])
+set(gcf, 'position', [585 111 453 720])
 box(ax1,'on')
 box(ax2,'on')
 box(ax3,'on')
@@ -56,28 +56,14 @@ plot(rlim, zlim, 'Color', [0.5 0.5 0.5], 'LineWidth', 3)
 % plot initial eq
 % ...............
 eq0 = eqs{1};
+struct_to_ws(eq0.gdata);
+clear xlim ylim
 snow0 = analyzeSnowflake(eq0);
 struct_to_ws(snow0);
-[zxP, zxS] = unpack(snow0.zx);
-[rxP, rxS] = unpack(snow0.rx);
 [psizr, rg, zg] = regrid(rg,zg,psizr,400,400);
 
 % primary contour
-crz = contourc(rg,zg,psizr,[psixPL psixPL]); 
-
-% remove a contour line to make figure clearer
-k = (crz(2,:) < zxS + .05)  &  (crz(1,:) < rxS); 
-k = k | ~inpolygon(crz(1,:), crz(2,:), rlim, zlim);
-crz(:,k) = nan;
-
-plot(crz(1,:), crz(2,:), 'Color', blue, 'linewidth', 1.5);
-
-% secondary contour
-crz = contourc(rg,zg,psizr,[psixSL psixSL]); 
-k = (crz(2,:) > zxP -.01) & (crz(1,:) > rxP - .01);  
-k = k | ~inpolygon(crz(1,:), crz(2,:), rlim, zlim);
-crz(:,k) = nan;
-plot(crz(1,:), crz(2,:), 'Color', blue, 'linewidth', 1.5);
+contour(rg,zg,psizr,[psixSL psixPL], 'Color', blue, 'linewidth', 1.5);
 
 plot(rx, zx, 'x','Color',blue, 'Markersize', 15, 'LineWidth', 4)
 
@@ -88,27 +74,17 @@ plot(rx, zx, 'x','Color',blue, 'Markersize', 15, 'LineWidth', 4)
 % plot final eq
 % .............
 eq1 = eqs{end};
+struct_to_ws(eq1);
+clear xlim ylim
 snow1 = analyzeSnowflake(eq1);
 struct_to_ws(snow1);
-[zxP, zxS] = unpack(zx);
-[rxP, rxS] = unpack(rx);
+[rxP, rxS, zxP, zxS, psixP, psixS] = my_snowfinder(rg, zg, psizr, psibry);
 [psizr, rg, zg] = regrid(rg,zg,psizr,400,400);
 
 % primary contour
-crz = contourc(rg,zg,psizr,[psixPL psixPL]); 
-k = crz(2,:) < zxS;  % remove a contour line to make figure clearer
-k = k | ~inpolygon(crz(1,:), crz(2,:), rlim, zlim);
-crz(:,k) = nan;
-plot(crz(1,:), crz(2,:), 'Color', orange, 'linewidth', 1.5);
+contour(rg,zg,psizr,[psixS psixP], 'Color', orange, 'linewidth', 1.5);
 
-% secondary contour
-crz = contourc(rg,zg,psizr,[psixSL psixSL]); 
-k = crz(2,:) > zxP  & crz(1,:) < rxP + .05;
-k = k | ~inpolygon(crz(1,:), crz(2,:), rlim, zlim);
-crz(:,k) = nan;
-plot(crz(1,:), crz(2,:), 'Color', orange, 'linewidth', 1.5);
-
-plot(rx, zx, 'x','Color', orange, 'Markersize', 15, 'LineWidth', 4)
+plot([rxP rxS], [zxP zxS], 'x','Color', orange, 'Markersize', 15, 'LineWidth', 4)
 
 
 
@@ -149,16 +125,16 @@ zsp = zSPP([1 end]);
 plot(rsp, zsp, 'o', 'color', orange, 'Markersize', 2, 'LineWidth', 3)
 scatter(rsp, zsp, 40, 'filled', 'markerfacecolor', orange)
 
-t1 = text(rsp(1) -.05, zsp(1),      'SP1');
-t2 = text(rsp(2) -.015, zsp(2)-.02,  'SP2');
+t1 = text(rsp(1) -.05, zsp(1) + .025,      'SP1');
+t2 = text(rsp(2) -.045, zsp(2)-.02,  'SP2');
 set([t1 t2], 'fontweight', 'bold', 'color', orange);
 
 title( [num2str(shot) ': ' num2str(time_ms) 'ms'], 'fontsize', 11, ...
   'fontweight', 'bold')
 
-text(0.97, -1.39, 'EFIT', 'fontsize', 11, 'Color', blue, 'fontweight', 'bold')
+text(0.958, -1.3, 'EFIT', 'fontsize', 11, 'Color', blue, 'fontweight', 'bold')
 
-text(0.97, -1.42, 'EFIT + IRTV constraint', 'fontsize', 11, 'Color', ...
+text(0.958, -1.33, 'EFIT+IRTV', 'fontsize', 11, 'Color', ...
   orange, 'fontweight', 'bold')
 
 
@@ -167,6 +143,8 @@ ylabel('$\mathrm{Z [m]}$', 'interpreter', 'latex','fontsize', 12)
 
 
 text(1.41,-1.02, 'a', 'fontsize', 18, 'fontweight', 'bold')
+
+
 
 
 % ===========
@@ -205,14 +183,14 @@ ef.ssp = double(ef.ssp([1 3]));
 for i = 1:2
   xline(ef.ssp(i)*100, '--', 'Color', 'k', 'linewidth', 1);
   xline(ssp(i)*100, '--', 'Color', blue, 'linewidth', 1);
-  
-%   text(min(ef.ssp(i), ssp(i))*100 - 6, 0.6, ['SP' num2str(i)], ...
-%     'fontweight', 'bold')
+
 end
 
+text(ef.ssp(1)*100 -8, 0.65, 'SP1', 'fontweight', 'bold')
+text(ef.ssp(2)*100 -6, 0.62, 'SP2', 'fontweight', 'bold')
 
 % plot formatting
-axis([95 173 -0.05 0.68])
+axis([95 173 -0.05 0.74])
 
 text(0.95, 0.2, 'b', 'units', 'normalized', 'fontsize', 18, ...
   'fontweight', 'bold')
@@ -258,6 +236,7 @@ plot(sir,qir,'k','linewidth',1.5)
 plot(s, q, 'color', orange, 'linewidth', 1.5)
 
 % find and plot strike points
+snow1 = analyzeSnowflake(eq1);
 ssp = snow1.sSPP;
 
 for i = 1:2
@@ -268,8 +247,11 @@ for i = 1:2
 %     'fontweight', 'bold')
 end
 
+text(ef.ssp(1)*100 -8, 0.65, 'SP1', 'fontweight', 'bold')
+text(ef.ssp(2)*100 -6, 0.62, 'SP2', 'fontweight', 'bold')
+
 % plot formatting
-axis([95 173 -0.05 0.68])
+axis([95 173 -0.05 0.74])
 
 text(0.95, 0.2, 'c', 'units', 'normalized', 'fontsize', 18, ...
   'fontweight', 'bold')
@@ -288,6 +270,8 @@ text(0.98, 0.88, 'IRTV', 'units', 'normalized', 'fontsize', 10, 'Color', ...
 
 
 if saveit
-  fn = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/fig_path.eps';
+  fn = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/fig_path_sfp.eps';
   saveas(gcf, fn, 'epsc')
+  fn2 = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/fig_path_sfp.svg';
+  saveas(gcf,fn2)
 end
