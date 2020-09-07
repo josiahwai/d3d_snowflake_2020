@@ -77,7 +77,7 @@ for k = 2:N
     
   % constrain x-pts in snowflake plus
   elseif sfp && ~constrain_sp
-    xps{k+1} = estimate_xpts_sfp5(eqs{k}, ef);
+    xps{k+1} = estimate_xpts_sfp7(eqs{k}, ef);
     eqs{k+1}  = designeq_ml(xps{k+1}, shot, time_ms, eqs{k});
     
   % constrain strike-pts in snowflake minus (1 iteration only)

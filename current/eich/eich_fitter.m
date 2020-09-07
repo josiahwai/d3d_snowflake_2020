@@ -130,7 +130,7 @@ qpks = [max(qperp(ii)) qpkx max(qperp(io))];
 
 eichfit = struct('rsp', rsp, 'zsp', zsp, 'ssp', ssp, 'chi_i', chi_i, ...
   'chi_o', chi_o, 'qpks', qpks, 'fiti', fiti, 'fito', fito, 'gofi', ...
-  gofi, 'gofo', gofo);
+  gofi, 'gofo', gofo, 'snow', snow);
 
 if plotit
   figure(19)

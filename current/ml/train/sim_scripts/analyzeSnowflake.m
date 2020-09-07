@@ -47,8 +47,8 @@ load([tokdir tokdata]);
 limdata = tok_data_struct.limdata;
 sLimTot = calcLimDistance(limdata(2,1), limdata(1,1), limdata);
 
-[rlim,zlim] = interparc(limdata(2,:), limdata(1,:), 2000, true);
-k= find(rlim < 1.5 & rlim > 0.8 & zlim < -.9 & zlim > -1.4); % bounding box
+[rlim,zlim] = interparc(limdata(2,:), limdata(1,:), 8000, true);
+k= find(rlim < 1.36 & rlim > 0.8 & zlim < -1 & zlim > -1.4); % bounding box
 rlim = rlim(k);
 zlim = zlim(k);
 slim = sLimTot - calcLimDistance(rlim,zlim,limdata);
@@ -89,25 +89,6 @@ if length(sSPS) > 4
   rSPS = rSPS(1:4);
   zSPS = zSPS(1:4);
 end
-
-% % Find the 'true' heatflux strike pts based on snow geometry
-% xp2in = inpolygon(rxS, zxS, limdata(2,:), limdata(1,:));
-% if snowPlus
-%   sSP_heat = sSPP(1:2);
-% elseif snowMinLFS
-%   if xp2in
-%    sSP_heat = [sSPP(1:2) sSPS([2 4])];
-%   else
-%     sSP_heat = sSPP(1:2);
-%   end
-% elseif snowMinHFS
-%   if xp2in
-%     sSP_heat = [sSPPS([1 3]) sSPP(end-1:end)];
-%   else
-%     sSP_heat = sSPP(1:2);
-%   end
-% end
-% sSP_heat = [sSP_heat nan(1,4-length(sSP_heat))];
   
 
 % plot it

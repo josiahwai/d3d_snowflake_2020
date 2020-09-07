@@ -3,9 +3,10 @@
 % ========
 clear
 saveit = 1;
-topdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfm/';
+% topdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfp/';
+topdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfp/155330_sfp/';
 root = '/u/jwai/d3d_snowflake_2020/current';
-save_fn = 'sims_sfm';
+save_fn = 'sims_sfp_155330';
 
 cd(topdir)
 
@@ -67,14 +68,14 @@ for i = 1:length(d)
         snowtype{k} = 'sfm';
       end
       
-      snow0 = analyzeSnowflake(eqs{2});
-      snowf = analyzeSnowflake(eqs{end});
-      ddpsi(k) = (snowf.psixPL - snowf.psixSL) - (snow0.psixPL - snow0.psixSL);
+%       snow0 = analyzeSnowflake(eqs{2});
+%       snowf = analyzeSnowflake(eqs{end});
+%       ddpsi(k) = (snowf.psixPL - snowf.psixSL) - (snow0.psixPL - snow0.psixSL);
       
       
       
       
-      ddpsi(k) = (snowf.psixPL - snowf.psixSL) - (snow0.psixPL - snow0.psixSL);
+%       ddpsi(k) = (snowf.psixPL - snowf.psixSL) - (snow0.psixPL - snow0.psixSL);
       shots(k) = eqs{1}.shotnum;
       times(k) = eqs{1}.time * 1000;
       j0(k,:) = eqs{2}.jpar;

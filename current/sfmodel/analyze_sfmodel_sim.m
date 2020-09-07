@@ -1,7 +1,7 @@
 close all
 
 % load eqs, sims, xps
-N = 7; length(sims);
+N = 11; % length(sims);
 
 plot_eq(eqs{1})
 axis([1.0 1.5 -1.4 -0.9])
