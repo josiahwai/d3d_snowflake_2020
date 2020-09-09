@@ -2,7 +2,7 @@
 % SETTINGS
 % ========
 clear
-saveit = 1;
+saveit = 0;
 
 blue = [20 108 191]/255;
 orange = [198 68 26]/255;
@@ -13,7 +13,8 @@ orange = [198 68 26]/255;
 % =======================
 close all
 
-load('/u/jwai/d3d_snowflake_2020/current/paper/analysis/load_sims_data/sims_sfm.mat')
+% load('/u/jwai/d3d_snowflake_2020/current/paper/analysis/load_sims_data/sims_sfm.mat')
+load('/u/jwai/d3d_snowflake_2020/current/paper/analysis/load_sims_data/sims_sfm_large_lambdaq.mat')
 
 struct_to_ws(sim);
 

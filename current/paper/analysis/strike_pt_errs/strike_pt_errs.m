@@ -9,9 +9,14 @@ saveit = 1;
 % save_fn = 'strike_sfm.mat';
 % expect_snowplus = 0;
 
-sfdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfp_constrain_sp/';
-save_fn = 'strike_sfp.mat';
-expect_snowplus = 1;
+% sfdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfp_constrain_sp/';
+% save_fn = 'strike_sfp.mat';
+% expect_snowplus = 1;
+
+sfdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfm_large_lambdaq/';
+save_fn = 'strike_sfm_large_lambdaq.mat';
+expect_snowplus = 0;
+
 
 % ====================
 % FIND STRIKE PT DIFFS

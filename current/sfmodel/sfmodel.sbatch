@@ -11,10 +11,10 @@
 
 
 echo '<<>> BEGINNING <<>>'
-date
+
 
 matlab -nodisplay < sfmodel.m
 
 
-date
+
 echo '<<>> END <<>>'

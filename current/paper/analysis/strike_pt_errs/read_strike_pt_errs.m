@@ -1,5 +1,5 @@
-load('strike_sfm.mat')
-
+% load('strike_sfm.mat')
+load('strike_sfm_large_lambdaq.mat')
 
 % remove outliers (usually errors in fitting), nans, bad data
 [~,i1] = rmoutliers(strike.err0, 'ThresholdFactor', 3 );

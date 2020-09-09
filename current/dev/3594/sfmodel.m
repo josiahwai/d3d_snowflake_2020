@@ -6,13 +6,10 @@ addpath(genpath(root));
 dum = load('args');
 [shot,time_ms,constrain_sp] = unpack(dum.args);
 
-% 155328: .009, .004, 0.2, 0.05
-% 155355: .006, .002, 0.07, 0.02
-
-lambdaq_i = .0063;
-lambdaq_o = .006; % 0018;
-chi_i = .1;
-chi_o = .03;
+lambdaq_i = .009;
+lambdaq_o = .009; % 0018;
+chi_i = .3;
+chi_o = .3;
 
 % =========================
 % LOAD AND SIMULATE EFIT EQS
@@ -49,7 +46,7 @@ load([qperp_dir qperp_data])  % loads q, s, and t
 qperp = qperp(k,:)';
 
 % obtain parameters from the eich fit to heat flux (strike points etc.)
-ef = eich_fitter(s', qperp, efit_eq1, tok_data_struct);
+ef = eich_fitter_dev(s', qperp, efit_eq1, tok_data_struct);
 
 
 % =========================
@@ -66,20 +63,22 @@ sfp = 0;
 if isnan(ef.ssp(2)), sfp = 1; end
 sfm = ~sfp;
 
-
+%%
 for k = 2:N
   fprintf(['\nIteration ' num2str(k) ' of ' num2str(N)])
   
   % constrain x-pts in snowflake minus
   if sfm
-    xps{k+1}  = estimate_xpts_sfm(eqs{k}, ef, sims{k});
+    xps{k+1}  = estimate_xpts_sfm_dev(eqs{k}, ef);
     eqs{k+1}  = designeq_ml(xps{k+1}, shot, time_ms, eqs{k});
-    
+%     sims{k+1} = heatsim_fit(eqs{k+1}, shot, time_ms, lambdaq_i, lambdaq_o, chi_i, chi_o);
+ 
   % constrain x-pts in snowflake plus
   elseif sfp && ~constrain_sp
     xps{k+1} = estimate_xpts_sfp7(eqs{k}, ef);
     eqs{k+1}  = designeq_ml(xps{k+1}, shot, time_ms, eqs{k});
-    
+%     sims{k+1} = heatsim_fit(eqs{k+1}, shot, time_ms, lambdaq_i, lambdaq_o, chi_i, chi_o);
+ 
   % constrain strike-pts in snowflake minus (1 iteration only)
   elseif sfp && constrain_sp    
     opts.constrain_sp = 1;
@@ -93,15 +92,14 @@ for k = 2:N
     break
   end
   
-  sims{k+1} = heatsim_fit(eqs{k+1}, shot, time_ms, lambdaq_i, lambdaq_o, chi_i, chi_o);
- 
+  
   % clear memory
   eqs{k+1} = rmfield(eqs{k+1}, {'r', 'b', 'p'});
 end
 
-eqs(3:end-1) = [];
-xps(3:end-1) = [];
-sims(3:end-1) = [];
+% eqs(3:end-1) = [];
+% xps(3:end-1) = [];
+% sims(3:end-1) = [];
 
 save('xps','xps')
 save('sims','sims')

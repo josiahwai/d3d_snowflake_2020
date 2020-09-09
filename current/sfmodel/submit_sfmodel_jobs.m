@@ -5,7 +5,7 @@ function submit_sfmodel_jobs(shot, sim_sfm, sim_sfp, constrain_sp)
 % ========
 % SETTINGS
 % ========
-% shot = 155330;
+% shot = 155354;
 runbatch = 1;
 % sim_sfm = 0;      % simulate times where IR predicts snowflake minus
 % sim_sfp = 1;      % simulate times where IR predicts snowflake plus
@@ -67,7 +67,7 @@ for iTime = 1:length(t_sim)
   
   batchscript_fn = [root 'sfmodel/sfmodel.sbatch'];   
   if sim_sfm  
-    jobdir = [root 'sfmodel/jobs/sfm/' num2str(shot) '_sfm/' num2str(time_ms) '/'];
+    jobdir = [root 'sfmodel/jobs/sfm_large_lambdaq/' num2str(shot) '_sfm/' num2str(time_ms) '/'];
   elseif sim_sfp && constrain_sp
     jobdir = [root 'sfmodel/jobs/sfp_constrain_sp/' num2str(shot) '_sfp_sp/' num2str(time_ms) '/'];    
   elseif sim_sfp && ~constrain_sp

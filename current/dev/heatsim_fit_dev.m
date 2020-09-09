@@ -1,4 +1,19 @@
-function sim = heatsim_fit(eq, shot, time_ms, lambdaq_i, lambdaq_o, chi_i, chi_o, plotit)
+ccc
+load('/u/jwai/d3d_snowflake_2020/current/dev/3727/eqs.mat')
+eq = eqs{end};
+shot = 155354;
+time_ms = 3727;
+% lambdaq_i = .006;
+% lambdaq_o = .006; 
+% chi_i = .1;
+% chi_o = .03;
+lambdaq_i = .006;
+lambdaq_o = .006; 
+chi_i = .3;
+chi_o = .3;
+plotit = 1;
+
+% function sim = heatsim_fit(eq, shot, time_ms, lambdaq_i, lambdaq_o, chi_i, chi_o, plotit)
 
 % ---------------------------------
 % ANALYZE THE SNOWFLAKE EQUILIBRIUM
@@ -132,10 +147,10 @@ BTotMid = sqrt(BpMid*BpMid + BtMid*BtMid);
 % create 1D grid for SOL
 nSOL = 100; % number of grid pts
 
-rSOLMid_o = linspace(rmid + 5e-5, rmid + 5e-5 + 3*lambdaq_o, nSOL)';
+rSOLMid_o = linspace(rmid + 5e-5, rmid + 5e-5 + 4*lambdaq_o, nSOL)';
 psiSOL_o = interp2(rg, zg, psizr, rSOLMid_o, zmid);
 
-rSOLMid_i = linspace(rmid + 5e-5, rmid + 5e-5 + 3*lambdaq_i, nSOL)';
+rSOLMid_i = linspace(rmid + 5e-5, rmid + 5e-5 + 4*lambdaq_i, nSOL)';
 psiSOL_i = interp2(rg, zg, psizr, rSOLMid_i, zmid);
 
 
@@ -172,7 +187,6 @@ q_parallel_OL = (q0_parallel_OL).*exp(-dr_o/lambdaq_o);
 
 %...........................................
 % Map the midplane heat flux to the divertor
-
 
 %...................................................................
 % Compute curves which are perpendicular to the flux surfaces (inbd)
@@ -406,13 +420,18 @@ if ~snowPlus && ~perfectSnow
     iRegion = 1:nRegion;   
     
     if snowMinHFS
-        qentr_par = q_parallel_IL(iRegion) * (1 - frad); 
+        q_par_midplane = q_parallel_IL(iRegion); 
     elseif snowMinLFS
-        qentr_par = q_parallel_OL(iRegion) * (1 - frad);
+        q_par_midplane = q_parallel_OL(iRegion);
     end
-                
-    [sdivX, qdiv_perpX] = find_qperp_v2(...
-      rdivX, zdivX, tauX, qentr_par, chi_o, limdata, eq);
+    
+    psiSOLX = psiSOL_o(iRegion);
+    
+    % find heat flux
+    [qdiv_perpX, sdivX, qdiv_parX] = ...
+        find_qperp(nRegion, iRegion, psiperpX, tauX, q_par_midplane, frad, ...
+        chi_o, psiSOLX, rdivX, zdivX, limdata, psizr, rg, zg, bzero, rzero, ...
+        sLimTot);
 end
 
 
@@ -428,12 +447,14 @@ elseif snowMinHFS
     iRegion = length(LdivX)+1:length(LdivX) + nRegion;    
 end
 
-qentr_parI = q_parallel_IL(iRegion) * (1 - frad);
+q_par_midplane = q_parallel_IL(iRegion);
 psiSOLI = psiSOL_i(iRegion);
 
 % find heat flux
-[sdivI, qdiv_perpI] = find_qperp_v2(...
-      rdivI, zdivI, tauI, qentr_parI, chi_i, limdata, eq);
+[qdiv_perpI, sdivI, qdiv_parI] = ...
+    find_qperp(nRegion, iRegion, psiperpI, tauI, q_par_midplane, frad, ...
+    chi_i, psiSOLI, rdivI, zdivI, limdata, psizr, rg, zg, bzero, rzero, ...
+    sLimTot);
 
 
 %........................................................
@@ -447,15 +468,15 @@ elseif snowMinLFS
 end
 % iRegion = iRegion-1;
 
-qentr_parO = q_parallel_OL(iRegion) * (1 - frad);
+q_par_midplane = q_parallel_OL(iRegion);
 psiSOLO = psiSOL_o(iRegion);
 
 
 % find heat flux
-[sdivO, qdiv_perpO] = find_qperp_v2(...
-      rdivO, zdivO, tauO, qentr_parO, chi_o, limdata, eq);
-
-
+[qdiv_perpO, sdivO, qdiv_parO] = ...
+    find_qperp(nRegion, iRegion, psiperpO, tauO, q_par_midplane, frad, ...
+    chi_o, psiSOLO, rdivO, zdivO, limdata, psizr, rg, zg, bzero, rzero, ...
+    sLimTot);
 
 
 %............................

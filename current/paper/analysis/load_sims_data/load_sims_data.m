@@ -4,9 +4,10 @@
 clear
 saveit = 1;
 % topdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfp/';
-topdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfp/155330_sfp/';
+% topdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfp/155330_sfp/';
+topdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfm_large_lambdaq';
 root = '/u/jwai/d3d_snowflake_2020/current';
-save_fn = 'sims_sfp_155330';
+save_fn = 'sims_sfm_large_lambdaq';
 
 cd(topdir)
 
@@ -54,7 +55,7 @@ for i = 1:length(d)
   
   
   if valid_sim
-    
+      k
       k = k+1;
      
       if contains(d(i).folder, 'sfp_sp')

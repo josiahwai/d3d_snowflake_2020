@@ -4,8 +4,8 @@ shotlist = 155328:2:155354;
 for shot = shotlist
   try
     
-    sim_sfm = 0;
-    sim_sfp = 1;
+    sim_sfm = 1;
+    sim_sfp = 0;
     constrain_sp = 0;
     
     submit_sfmodel_jobs(shot, sim_sfm, sim_sfp, constrain_sp)

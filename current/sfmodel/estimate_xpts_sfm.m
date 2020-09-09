@@ -68,7 +68,7 @@ dxpP = dxpP1 + dxpP2;
 % find psixS by determining how heat flux divides between SP2 and SP3
 [rmid,k] = max(rbbbs);
 zmid = zbbbs(k);
-lambda_q = .002; % sol width
+lambda_q = .006; % sol width
 
 % heat flux at r > rsplit_ir at midplane goes to outer peak, otherwise
 % middle peak
