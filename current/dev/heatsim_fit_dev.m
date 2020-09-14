@@ -3,14 +3,16 @@ load('/u/jwai/d3d_snowflake_2020/current/dev/3727/eqs.mat')
 eq = eqs{end};
 shot = 155354;
 time_ms = 3727;
-% lambdaq_i = .006;
-% lambdaq_o = .006; 
-% chi_i = .1;
-% chi_o = .03;
-lambdaq_i = .006;
-lambdaq_o = .006; 
-chi_i = .3;
-chi_o = .3;
+
+lambdaq_i = .009;  % [m]
+lambdaq_x = .006;
+lambdaq_o = .001; 
+Di = 0.6;          % Diffusion coeffs [m^2/s]
+Dx = 0.1;
+Do = 1.5;
+
+
+
 plotit = 1;
 
 % function sim = heatsim_fit(eq, shot, time_ms, lambdaq_i, lambdaq_o, chi_i, chi_o, plotit)
@@ -110,14 +112,12 @@ if plotit
     plot(rxSL, zxSL, 'xb', 'Markersize', 12, 'LineWidth', 3)
 end
 
-
 % find the divertor portion of the limiter
 Rlessthan = limdata(2,:) <  2.5;
 Zlessthan = limdata(1,:) < -0.2;
 boxL = Rlessthan & Zlessthan;
 limIdxL = find(boxL ~= 0);
-
-zShelf = -1.25; % DIII-D shelf
+zShelf = -1.25;     % DIII-D shelf
 
 % ------------------
 % SIMULATE HEAT FLUX
@@ -130,69 +130,46 @@ C = contourc(rg, zg, psizr, [psixPL psixPL]);
 [rmid, k] = max(C(1,:));
 zmid = C(2,k);
 
-
 % Compute the poloidal and total fields at the midplane
 [~, dpsidr, dpsidz] = bicubicHermite(rg, zg, psizr, rmid, zmid);
 
 BrMid = -1/(2*pi*rmid)*dpsidz;
 BzMid =  1/(2*pi*rmid)*dpsidr;
-
 BpMid = sqrt(BrMid*BrMid + BzMid*BzMid);
-
 BtMid = (bzero*rzero)/rmid;
-
 BTotMid = sqrt(BpMid*BpMid + BtMid*BtMid);
-
 
 % create 1D grid for SOL
 nSOL = 100; % number of grid pts
-
-rSOLMid_o = linspace(rmid + 5e-5, rmid + 5e-5 + 4*lambdaq_o, nSOL)';
+rSOLMid_o = linspace(rmid + 5e-5, rmid + 5e-5 + 4*max(lambdaq_x, lambdaq_o), nSOL)';
 psiSOL_o = interp2(rg, zg, psizr, rSOLMid_o, zmid);
-
 rSOLMid_i = linspace(rmid + 5e-5, rmid + 5e-5 + 4*lambdaq_i, nSOL)';
 psiSOL_i = interp2(rg, zg, psizr, rSOLMid_i, zmid);
-
 
 if plotit
     contour(rg, zg, psizr, [psiSOL_o(end) psiSOL_o(end)], '-b')
 end
 
 % Compute the power entering the SOL
-
 Pheat = 4; % [MW]
-
 fOBL = 0.70; % fraction of power to outboard divertor
 PSOL = Pheat;
 frad = 0.8; 
 
 % power flowing to each divertor leg
-
 PdivOL = PSOL*fOBL;
 PdivIL = PSOL*(1-fOBL);
 
 % Compute the peak heat flux at the midplane
-q0_parallel_IL = PdivIL/(4*pi*rmid*lambdaq_o*(BpMid/BTotMid));    % ADJUST THESE FOR MAGNITUDE ??
+q0_parallel_IL = PdivIL/(4*pi*rmid*lambdaq_o*(BpMid/BTotMid));    
 q0_parallel_OL = PdivOL/(4*pi*rmid*lambdaq_o*(BpMid/BTotMid));
 
-
-% Compute midplane heat flux profile
-
-dr_o = rSOLMid_o - rmid;
-dr_i = rSOLMid_i - rmid;
-
-q_parallel_IL = (q0_parallel_IL).*exp(-dr_i/lambdaq_i);
-q_parallel_OL = (q0_parallel_OL).*exp(-dr_o/lambdaq_o);
-
-
-%...........................................
-% Map the midplane heat flux to the divertor
 
 %...................................................................
 % Compute curves which are perpendicular to the flux surfaces (inbd)
 [dpsidr, dpsidz] = rzGrad(psizr, rg, zg);
 ds = .005;
-ns = 5e4;
+ns = 10e4;
 
 if snowMinHFS 
     % start the perpendicular curve at the secondary x-pt
@@ -214,7 +191,7 @@ for ii = 1:ns
     psi_r = interp2(rg, zg, dpsidr, rperpI(ii), zperpI(ii));
     psi_z = interp2(rg, zg, dpsidz, rperpI(ii), zperpI(ii));
     
-    eta = eta0*exp(-10*sqrt(psi_r*psi_r + psi_z*psi_z));
+    eta = eta0*exp(-8*sqrt(psi_r*psi_r + psi_z*psi_z));
     
     rperpI(ii+1) = rperpI(ii) - eta*psi_r;
     zperpI(ii+1) = zperpI(ii) - eta*psi_z;
@@ -256,7 +233,7 @@ for ii = 1:ns
     psi_r = interp2(rg, zg, dpsidr, rperpO(ii), zperpO(ii));
     psi_z = interp2(rg, zg, dpsidz, rperpO(ii), zperpO(ii));
     
-    eta = eta0*exp(-10*sqrt(psi_r*psi_r + psi_z*psi_z));
+    eta = eta0*exp(-8*sqrt(psi_r*psi_r + psi_z*psi_z));
     
     rperpO(ii+1) = rperpO(ii) - eta*psi_r;
     zperpO(ii+1) = zperpO(ii) - eta*psi_z;
@@ -292,7 +269,7 @@ zentrO = interp1(psiperpO, zperpO, psiSOL_o);
     zentrO);
 
 % determine flux tube partitions
-idxInner = find(psiSOL_o > psixSL);  % flux tube MIGHT be between x-points
+idxInner = find(psiSOL_o > psixSL);   % flux tube MIGHT be between x-points
 idxOuter = setdiff(1:nSOL, idxInner); % flux tube outside x-pts
 
 % find rz coordinates of line between x-points (constant psi-spacing)
@@ -328,7 +305,6 @@ end
 % the limiter. Check if this is the case and if so, project the divertor 
 % entrance back to the limiter by integrating connection length backwards. 
 
-
 % inboard
 iOut = ~inpolygon(rentrI,zentrI,rlim,zlim);
 startinI(1:length(rentrI)) = true;
@@ -348,7 +324,6 @@ startinO(iOut) = false;
     bzero, rzero, limdata, 1, startinO);
 
 LdivO(iOut) = 0;
-
     
 % line between xpoints
 LdivX = NaN; 
@@ -375,7 +350,6 @@ if plotit
     plot(rdivO, zdivO, 'ob')
     if ~snowPlus, plot(rdivX, zdivX, 'og'); end
 end
-
 
 % correct potential off-by-one errors in snowminus (doublecounted edge-pts)
 if snowMinLFS
@@ -409,74 +383,90 @@ if ~snowPlus, tauX = LdivX/cs; end
 
 
 
-%........................................................
-% Compute the heat flux profile region between 2 x-points
-qdiv_perpX = NaN;
-sdivX = NaN;
-psiSOLX = NaN;
-qdiv_parX = NaN;
+% Compute midplane heat flux profile (initial condition to diffusion eqn)
+dr_i = rSOLMid_i - rmid;
+dr_o = rSOLMid_o - rmid;
+
 if ~snowPlus && ~perfectSnow
-    nRegion = length(LdivX);
-    iRegion = 1:nRegion;   
-    
-    if snowMinHFS
-        q_par_midplane = q_parallel_IL(iRegion); 
-    elseif snowMinLFS
-        q_par_midplane = q_parallel_OL(iRegion);
-    end
-    
-    psiSOLX = psiSOL_o(iRegion);
-    
-    % find heat flux
-    [qdiv_perpX, sdivX, qdiv_parX] = ...
-        find_qperp(nRegion, iRegion, psiperpX, tauX, q_par_midplane, frad, ...
-        chi_o, psiSOLX, rdivX, zdivX, limdata, psizr, rg, zg, bzero, rzero, ...
-        sLimTot);
+  dr_x = dr_o(idxInner);
+  dr_o = dr_o(idxOuter) - dr_o(idxOuter(1));
 end
 
+qpar0_I = (q0_parallel_IL).*exp(-dr_i/lambdaq_i);
+qpar0_X = (q0_parallel_OL).*exp(-dr_x/lambdaq_x);
 
-%........................................................
-% Compute the heat flux profile for the inboard/HFS region
+%%
+% There is a separate lambda_q,effective for power-splitting (Canal, NF, 2015)
+% which differs from lambdaq_o. Need to normalize qpar0_O to get power distribution
+% as a result
+norm_factor = 3 * exp(-dr_x(end) / lambdaq_x);
+qpar0_O = norm_factor * q0_parallel_OL * exp(-dr_o/lambdaq_o); 
 
-% inboard parameters
-nRegion = length(LdivI);
 
-if  snowPlus || snowMinLFS
-    iRegion = 1:nRegion;
-elseif snowMinHFS
-    iRegion = length(LdivX)+1:length(LdivX) + nRegion;    
+% ======================
+% Heat flux: x-pt region
+% ======================
+[qdiv_perpX, sdivX, psiSOLX, qdiv_parX] = unpack([nan nan nan nan]);
+
+if ~snowPlus && ~perfectSnow
+
+  % extend the solution region
+  dist_extend = 0.1;  % [m]
+  sdivX = sLimTot - calcLimDistance(rdivX, zdivX, limdata);  
+  n_extend = floor( dist_extend / abs(mean(diff(sdivX))));
+    
+  sdivX = wextend('1D', 'sp1', sdivX, n_extend);
+  tauX  = wextend('1D', 'sp0', tauX,  n_extend);
+  qpar0_X = wextend('1D', 'zpd', qpar0_X, n_extend);  
+
+  [rdivX, zdivX] = calcLimDistanceInv(sLimTot - sdivX, limdata);
+  psiSOLX = bicubicHermite(rg, zg, psizr, rdivX, zdivX);
+  
+  [qdiv_parX, qdiv_perpX] = heat_diffusion(qpar0_X, tauX, Dx, sdivX, rdivX, zdivX, eq, limdata);
 end
 
-q_par_midplane = q_parallel_IL(iRegion);
-psiSOLI = psiSOL_i(iRegion);
+% =========================
+% Heat flux: inboard region
+% =========================
 
-% find heat flux
-[qdiv_perpI, sdivI, qdiv_parI] = ...
-    find_qperp(nRegion, iRegion, psiperpI, tauI, q_par_midplane, frad, ...
-    chi_i, psiSOLI, rdivI, zdivI, limdata, psizr, rg, zg, bzero, rzero, ...
-    sLimTot);
+% extend the solution region
+dist_extend = 0.1;  % [m]
+sdivI = sLimTot - calcLimDistance(rdivI, zdivI, limdata);
+n_extend = floor( dist_extend / abs(mean(diff(sdivI))));
 
+sdivI = wextend('1D', 'sp1', sdivI, n_extend);
+tauI  = wextend('1D', 'sp0', tauI,  n_extend);
+qpar0_I = wextend('1D', 'zpd', qpar0_I, n_extend);
 
-%........................................................
-% Compute the heat flux profile for the outboard/LFS region
-nRegion = length(LdivO);
+[rdivI, zdivI] = calcLimDistanceInv(sLimTot - sdivI, limdata);
+psiSOLI = bicubicHermite(rg, zg, psizr, rdivI, zdivI);
 
-if snowPlus || snowMinHFS
-    iRegion = 1:nRegion;
-elseif snowMinLFS
-    iRegion = length(LdivX)+1:length(LdivX) + nRegion;
-end
-% iRegion = iRegion-1;
-
-q_par_midplane = q_parallel_OL(iRegion);
-psiSOLO = psiSOL_o(iRegion);
+[qdiv_parI, qdiv_perpI] = heat_diffusion(qpar0_I, tauI, Di, sdivI, rdivI, zdivI, eq, limdata);
 
 
-% find heat flux
-[qdiv_perpO, sdivO, qdiv_parO] = ...
-    find_qperp(nRegion, iRegion, psiperpO, tauO, q_par_midplane, frad, ...
-    chi_o, psiSOLO, rdivO, zdivO, limdata, psizr, rg, zg, bzero, rzero, ...
-    sLimTot);
+% =========================
+% Heat flux: outboard region
+% =========================
+
+% workaround due to bug: realign sdivO with strike point
+sdivO = sLimTot - calcLimDistance(rdivO, zdivO, limdata);
+snow = analyzeSnowflake(eq);
+sdivO = sdivO + snow.sSPS(end) - sdivO(3);
+
+
+% extend the solution region
+dist_extend = 0.1;  % [m]
+n_extend = floor( dist_extend / abs(mean(diff(sdivO))));
+
+sdivO = wextend('1D', 'sp1', sdivO, n_extend);
+tauO  = wextend('1D', 'sp0', tauO,  n_extend);
+qpar0_O = wextend('1D', 'zpd', qpar0_O, n_extend);
+
+[rdivO, zdivO] = calcLimDistanceInv(sLimTot - sdivO, limdata);
+psiSOLO = bicubicHermite(rg, zg, psizr, rdivO, zdivO);
+
+[qdiv_parO, qdiv_perpO] = heat_diffusion(qpar0_O, tauO, Do, sdivO, rdivO, zdivO, eq, limdata);
+
 
 
 %............................
@@ -630,10 +620,10 @@ if plotit
   maxQ = max([qdiv_perpI; qdiv_perpX; qdiv_perpO]);
   ylim(1.10*[0 maxQ])
   
-  xline(sSPI, 'k');
-  xline(sSPO, 'k');
-  xline(s45Deg1, '--k');
-  xline(s45Deg2, '--k'); 
+%   xline(sSPI, 'k');
+%   xline(sSPO, 'k');
+%   xline(s45Deg1, '--k');
+%   xline(s45Deg2, '--k'); 
   
   plot(s, qir/nansum(qirmax), '-ok', 'LineWidth', 1, 'MarkerSize', 2)
   ylim([0 1.1*max(qir)])

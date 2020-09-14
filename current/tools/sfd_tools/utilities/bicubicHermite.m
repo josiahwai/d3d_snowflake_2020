@@ -43,6 +43,15 @@ z0 = zeros(size(x0));
 dz0dx = zeros(size(x0));
 dz0dy = zeros(size(x0));
 
+if length(x0) ~= length(y0)
+  if length(x0) == 1
+    x0 = x0*ones(size(y0));
+  elseif length(y0) == 1
+    y0 = y0 * ones(size(x0));
+  end
+end
+
+
 for k = 1:length(x0)
     
     % Grid point weighting matrix for cubic convolution (Keys, IEEE 1981)

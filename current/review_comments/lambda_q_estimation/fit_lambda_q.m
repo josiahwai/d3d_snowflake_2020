@@ -25,7 +25,8 @@ f_fit = exp(-r ./ lambda_q_fit);
 hold on
 plot(r,f_fit, 'linewidth', 2)
 
-
+ylabel('P4 / (P4 + P2)')
+xlabel('Midplane Separatrix Separation [mm]')
 
 
 

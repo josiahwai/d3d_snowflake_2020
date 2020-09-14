@@ -3,7 +3,7 @@ clear all; clc; close all; warning('off','all');
 root = '/u/jwai/d3d_snowflake_2020/current/';
 addpath(genpath(root));
 
-dum = load('args');
+dum = load('/u/jwai/d3d_snowflake_2020/current/dev/3727/args.mat');
 [shot,time_ms,constrain_sp] = unpack(dum.args);
 
 lambdaq_i = .006;
