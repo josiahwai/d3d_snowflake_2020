@@ -1,6 +1,6 @@
 ccc
 load('/u/jwai/d3d_snowflake_2020/current/dev/3727/eqs.mat')
-eq = eqs{end};
+eq = eqs{1}.gdata;
 shot = 155354;
 time_ms = 3727;
 
@@ -387,21 +387,26 @@ if ~snowPlus, tauX = LdivX/cs; end
 dr_i = rSOLMid_i - rmid;
 dr_o = rSOLMid_o - rmid;
 
+qpar0_I = q0_parallel_IL * exp(-dr_i/lambdaq_i);
+
 if ~snowPlus && ~perfectSnow
   dr_x = dr_o(idxInner);
   dr_o = dr_o(idxOuter) - dr_o(idxOuter(1));
+  qpar0_X = (q0_parallel_OL).*exp(-dr_x/lambdaq_x);
+  
+  % There is a separate lambda_q,effective for power-splitting (Canal, NF, 2015)
+  % which differs from lambdaq_o. Need to normalize qpar0_O to get power distribution
+  % as a result
+  norm_factor = 3 * exp(-dr_x(end) / lambdaq_x);
+  qpar0_O = norm_factor * q0_parallel_OL * exp(-dr_o/lambdaq_o);
+
+else
+  qpar0_O = q0_parallel_OL * exp(-dr_o/lambdaq_x);
 end
 
-qpar0_I = (q0_parallel_IL).*exp(-dr_i/lambdaq_i);
-qpar0_X = (q0_parallel_OL).*exp(-dr_x/lambdaq_x);
-
 %%
-% There is a separate lambda_q,effective for power-splitting (Canal, NF, 2015)
-% which differs from lambdaq_o. Need to normalize qpar0_O to get power distribution
-% as a result
-norm_factor = 3 * exp(-dr_x(end) / lambdaq_x);
-qpar0_O = norm_factor * q0_parallel_OL * exp(-dr_o/lambdaq_o); 
-
+load('matlab.mat')
+Do = 0.6;
 
 % ======================
 % Heat flux: x-pt region
@@ -430,7 +435,7 @@ end
 % =========================
 
 % extend the solution region
-dist_extend = 0.1;  % [m]
+dist_extend = 0.05;  % [m]
 sdivI = sLimTot - calcLimDistance(rdivI, zdivI, limdata);
 n_extend = floor( dist_extend / abs(mean(diff(sdivI))));
 
@@ -451,8 +456,11 @@ psiSOLI = bicubicHermite(rg, zg, psizr, rdivI, zdivI);
 % workaround due to bug: realign sdivO with strike point
 sdivO = sLimTot - calcLimDistance(rdivO, zdivO, limdata);
 snow = analyzeSnowflake(eq);
-sdivO = sdivO + snow.sSPS(end) - sdivO(3);
-
+if ~snowPlus && ~perfectSnow
+  sdivO = sdivO + snow.sSPS(end) - sdivO(3);
+else
+  sdivO = sdivO + snow.sSPP(end) - sdivO(3);
+end
 
 % extend the solution region
 dist_extend = 0.1;  % [m]
@@ -462,11 +470,12 @@ sdivO = wextend('1D', 'sp1', sdivO, n_extend);
 tauO  = wextend('1D', 'sp0', tauO,  n_extend);
 qpar0_O = wextend('1D', 'zpd', qpar0_O, n_extend);
 
+tauO = 1e-4 * ones(size(tauO));
+
 [rdivO, zdivO] = calcLimDistanceInv(sLimTot - sdivO, limdata);
 psiSOLO = bicubicHermite(rg, zg, psizr, rdivO, zdivO);
 
 [qdiv_parO, qdiv_perpO] = heat_diffusion(qpar0_O, tauO, Do, sdivO, rdivO, zdivO, eq, limdata);
-
 
 
 %............................
