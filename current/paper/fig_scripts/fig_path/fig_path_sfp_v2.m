@@ -1,10 +1,11 @@
 % ========
 % SETTINGS
 % ========
-shot = 155336;
-time_ms = 2700;
-saveit = 1;
-simdir = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/155336_2697/';
+ccc
+shot = 155348;
+time_ms = 3760;
+saveit = 0;
+simdir = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/155348_3760/';
 
 plot_efit = 0;
 
@@ -125,7 +126,7 @@ text(1.41,-1.02, 'e', 'fontsize', 18, 'fontweight', 'bold')
 
 
 
-
+%%
 % ===========
 % PLOT HEAT
 % ===========
@@ -166,13 +167,14 @@ for i = 1:2
 end
 
 text(ef.ssp(1)*100 -9, 0.65, 'SP1', 'fontweight', 'bold')
-text(ef.ssp(2)*100 -8, 0.62, 'SP2', 'fontweight', 'bold')
+text(ef.ssp(2)*100 -9, 0.62, 'SP2', 'fontweight', 'bold')
 
 % plot formatting
-axis([95 180 -0.05 0.74])
+axis([88 182 -0.05 0.74])
 
-text(0.93, 0.2, 'f', 'units', 'normalized', 'fontsize', 18, ...
-  'fontweight', 'bold')
+
+text(0.95, 0.2, 'f', 'units', 'normalized', 'fontsize', 18, ...
+  'fontweight', 'bold', 'backgroundcolor', 'white')
 
 yline(0,'-k');
 ylabel('$q^{div}_\perp / \sum{q^{div}_{\perp,peaks}}$', ...
@@ -229,6 +231,6 @@ text(0.98, 0.63, 'EFIT+IRTV', 'units', 'normalized', 'fontsize', 10, 'Color', ..
 if saveit
   fn = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/fig_path_sfp.eps';
   saveas(gcf, fn, 'epsc')
-  fn2 = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/fig_path_sfp.svg';
-  saveas(gcf,fn2)
+%   fn2 = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/fig_path_sfp.svg';
+%   saveas(gcf,fn2)
 end

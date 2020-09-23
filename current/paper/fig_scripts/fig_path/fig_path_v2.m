@@ -1,11 +1,12 @@
 % ========
 % SETTINGS
 % ========
-shot = 155354;
-time_ms = 3727;
-saveit = 1;
-simdir = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/155354_3727/';
-% simdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/155328_sfp/2830/';
+ccc
+shot = 155350;
+time_ms = 3890;
+saveit = 0;
+% simdir = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/155354_3727_large_lambdaq/';
+simdir = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/155350_3893/';
 plot_efit = 0;
 
 % Load stuff
@@ -163,7 +164,7 @@ ylabel('$\mathrm{Z [m]}$', 'interpreter', 'latex','fontsize', 12)
 
 text(1.41,-1.02, 'b', 'fontsize', 18, 'fontweight', 'bold')
 
-
+%%
 % ===========
 % PLOT HEAT
 % ===========
@@ -208,10 +209,10 @@ end
 
 
 % plot formatting
-axis([95 180 -0.05 0.68])
+axis([93 182 -0.05 0.68])
 
-text(0.93, 0.2, 'c', 'units', 'normalized', 'fontsize', 18, ...
-  'fontweight', 'bold')
+text(0.94, 0.2, 'c', 'units', 'normalized', 'fontsize', 18, ...
+  'fontweight', 'bold', 'backgroundcolor', 'white')
 
 yline(0,'-k');
 ylabel('$q^{div}_\perp / \sum{q^{div}_{\perp,peaks}}$', ...
@@ -233,8 +234,7 @@ axes(ax2)
 hold on
 
 % Load sim
-% struct_to_ws(sims{min(10,end)});
-load('sim_tf'); struct_to_ws(sim);
+struct_to_ws(sims{end});
 
 sir = sir*100; % [m] to [cm]
 ef = eich_fitter(sir, qir, eqs{end}, tok_data_struct);
@@ -271,10 +271,9 @@ xlabel('$\mathrm{S [cm]}$', 'interpreter', 'latex','fontsize', 12)
 text(0.98, 0.63, 'EFIT+IRTV', 'units', 'normalized', 'fontsize', 10, 'Color', ...
   orange, 'fontweight', 'bold', 'horizontalAlignment', 'right')
 
-
 if saveit
   fn = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/fig_path.eps';
   saveas(gcf, fn, 'epsc')
-  fn2 = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/fig_path.svg';
-  saveas(gcf,fn2)
+%   fn2 = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/fig_path.svg';
+%   saveas(gcf,fn2)
 end

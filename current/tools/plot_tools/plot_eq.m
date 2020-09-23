@@ -24,7 +24,7 @@ hold on
 
 try
   [~,~,~,~, psixPL, psixSL] = my_snowfinder(rg, zg, psizr, eq.psibry);
-  c = 'b';
+  c = 'r';
   contour(rg,zg,psizr,[psixPL psixPL], 'color', c, 'linewidth', 1.5);
   contour(rg,zg,psizr,[psixSL psixSL], 'color', c, 'linewidth', 1);
 catch

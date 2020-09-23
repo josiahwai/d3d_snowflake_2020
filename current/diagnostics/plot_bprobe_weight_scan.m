@@ -1,20 +1,21 @@
-close all
+clear; clc; close all
 
-wts = logspace(-2,6,30);
-wts = [nan wts(3:end)];
+wts = logspace(1,4.7,100);
 
 load('bprobe_weight_scan_data.mat')
+neqs = length(bprobe_weight_scan_data);
+wts  = wts(1:neqs);
 
 % xp targets
 rx0 = [1.2235    1.1560];
 zx0 = [-1.1746   -1.3229];
-load('xps');
+load('/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfm_large_lambdaq/155354_sfm/3727/xps.mat')
 xpf = xps{end};
 rxf =xpf(1:2);
 zxf = xpf(3:4);
 
 % psi targets
-load('/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfm/155354_sfm/3727/eqs.mat')
+load('/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfm_large_lambdaq/155354_sfm/3727/eqs.mat')
 snow_tf = analyzeSnowflake(eqs{end});
 snow_t0 = analyzeSnowflake(eqs{1});
 
@@ -28,9 +29,8 @@ dpsi_t0 = psixPL_t0 - psixSL_t0;
 
 
 % from eich_fit to 155354:3727
-ef.rsp = [1.0160 1.0908 1.2572];
-ef.zsp = [-1.0756 -1.2995 -1.3630];
-
+ef.rsp = [1.0160 1.0908 1.2742];
+ef.zsp = [-1.0758 -1.2995 -1.3630];
 
 % LOAD DATA
       
@@ -44,7 +44,7 @@ psixPL = [];
 
 plot_eq(bprobe_weight_scan_data(1).eqs)
 
-for k = 1:length(bprobe_weight_scan_data)
+for k = 1:neqs
   ssq(k) = bprobe_weight_scan_data(k).ssq;
   eq = bprobe_weight_scan_data(k).eqs;
   snow = analyzeSnowflake(eq);
@@ -87,14 +87,20 @@ for k = 1:length(bprobe_weight_scan_data)
 end
 
 %%
-close 
-
+close all
 figure
 hold on
-wt = ((1:length(ssq)) - 15)/10;
-wt(wt<0) = nan;
 
-wt_sfp = (20.5 - 15) / 10; % transition from sfp to sfm 
+% normalize the x-axiswt
+x0 = 40;
+xf = 89;
+wt = ((1:neqs) - x0) / (xf - x0);
+wt( wt < 0) = nan;
+wt( wt > 1) = nan;
+
+is_sfp(1) = 1;
+i = find(is_sfp == 0, 1);
+wt_sfp = (wt(i) + wt(i-1)) / 2;
 
 colorblind_cmap
 
@@ -103,20 +109,21 @@ colorblind_cmap
 plot(wt, dxp_targ*100 , 'color', blugreen, 'linewidth', 1.5);  % [cm]
 plot(wt, dsp*100, 'color', orange, 'linewidth', 1.5 );  % [cm]
 plot(wt, dpsi_err*1000, 'color', skyblue, 'linewidth', 1.5 ); % [mWB]
-plot(wt, sqrt(ssq)*100, 'color', redpurple, 'linewidth', 1.5)  % [100*Gs]
+plot(wt, sqrt(ssq)*200, 'color', redpurple, 'linewidth', 1.5)  % [50*Gs]
 
-plot([.2615 .3], [9.2137 9.85], 'color', black, 'linewidth', 0.75)
+% plot([.2615 .3], [9.2137 9.85], 'color', black, 'linewidth', 0.75)
 
 xline(wt_sfp, 'color', gray, 'linewidth', 1);
 
-xlim([0 1])
-ylim([ 0 12.5])
+% xlim([0 1])
+ylim([ 0 15])
 box('on')
+grid on
 
-t1 = text(0.01, 0.68, '\Deltaxp [cm]', 'units', 'normalized', 'color', blugreen);
-t2 = text(0.01, 0.91, '\Deltasp [cm]', 'units', 'normalized', 'color', orange);
-t3 = text(0.28, 0.82, '\Delta\psi [mWb]', 'units', 'normalized', 'color', skyblue);
-t4 = text(0.01, 0.23, '\DeltaBprobe [100Gs]', 'units', 'normalized', 'color', redpurple);
+t1 = text(0.01, 0.76, '\Deltaxp [cm]', 'units', 'normalized', 'color', blugreen);
+t2 = text(0.01, 0.52, '\Deltasp [cm]', 'units', 'normalized', 'color', orange);
+t3 = text(0.01, 0.86, '\Delta\psi [mWb]', 'units', 'normalized', 'color', skyblue);
+t4 = text(0.01, 0.25, '\DeltaBprobe [50Gs]', 'units', 'normalized', 'color', redpurple);
 
 set([t1 t2 t3 t4], 'fontweight', 'bold', 'fontsize', 12)
 
@@ -124,16 +131,16 @@ set([t1 t2 t3 t4], 'fontweight', 'bold', 'fontsize', 12)
 ylabel('\Sigma errors', 'fontsize', 12, 'fontweight', 'bold')
 xlabel('IRTV weight', 'fontsize', 12, 'fontweight', 'bold')
 
-set(gcf, 'position', [881 280 560 420])
+set(gcf, 'position', [211 254 560 420])
 
 x1 = [wt_sfp wt_sfp - 0.2];
-y = [1 1] * 11.3;
+y = [1 1] * 14.2;
 
 drawArrow(x1,y,{'Color',gray,'LineWidth',4}); 
-t = text(wt_sfp - 0.025, 11.85, 'SFD+', 'fontweight', 'bold', 'fontsize', 14, ...
+t = text(wt_sfp - 0.025, 13.3, 'SFD+', 'fontweight', 'bold', 'fontsize', 14, ...
   'color', gray, 'horizontalAlignment', 'right');
 
-t = text(wt_sfp + 0.025, 11.85, 'SFD-', 'fontweight', 'bold', 'fontsize', 14, ...
+t = text(wt_sfp + 0.025, 13.3, 'SFD-', 'fontweight', 'bold', 'fontsize', 14, ...
   'color', gray, 'horizontalAlignment', 'left');
 x2 = [wt_sfp wt_sfp + 0.2];
 drawArrow(x2,y,{'Color',gray,'LineWidth',4}); 

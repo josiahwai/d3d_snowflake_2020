@@ -69,9 +69,9 @@ for iTime = 1:length(t_sim)
   if sim_sfm  
     jobdir = [root 'sfmodel/jobs/sfm_large_lambdaq/' num2str(shot) '_sfm/' num2str(time_ms) '/'];
   elseif sim_sfp && constrain_sp
-    jobdir = [root 'sfmodel/jobs/sfp_constrain_sp/' num2str(shot) '_sfp_sp/' num2str(time_ms) '/'];    
+    jobdir = [root 'sfmodel/jobs/sfp_constrain_sp_large_lambdaq/' num2str(shot) '_sfp_sp/' num2str(time_ms) '/'];    
   elseif sim_sfp && ~constrain_sp
-    jobdir = [root 'sfmodel/jobs/sfp/' num2str(shot) '_sfp/' num2str(time_ms) '/'];
+    jobdir = [root 'sfmodel/jobs/sfp_large_lambdaq/' num2str(shot) '_sfp/' num2str(time_ms) '/'];
   end
   
   

@@ -1,4 +1,4 @@
-shotlist = 155328:2:155354;
+shotlist = 155328:2:155352;
 
 % submit batch jobs every x hours
 for shot = shotlist

@@ -1,11 +1,13 @@
 % ========
 % SETTINGS
 % ========
-shot = 155336;
-time_ms = 2700;
-saveit = 1;
+ccc
+shot = 155348;
+time_ms = 3760;
+saveit = 0;
+simdir = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/155348_3760/';
 % simdir = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/155354_3727/';
-simdir = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/155336_2697/';
+% simdir = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/155336_2697/';
 % simdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/155328_sfp_constrain_sp/2398/';
 
 plot_efit = 0;
@@ -132,9 +134,9 @@ set([t1 t2], 'fontweight', 'bold', 'color', orange);
 title( [num2str(shot) ': ' num2str(time_ms) 'ms'], 'fontsize', 11, ...
   'fontweight', 'bold')
 
-text(0.958, -1.3, 'EFIT', 'fontsize', 11, 'Color', blue, 'fontweight', 'bold')
+text(0.958, -1.32, 'EFIT', 'fontsize', 11, 'Color', blue, 'fontweight', 'bold')
 
-text(0.958, -1.33, 'EFIT+IRTV', 'fontsize', 11, 'Color', ...
+text(0.958, -1.35, 'EFIT+IRTV', 'fontsize', 11, 'Color', ...
   orange, 'fontweight', 'bold')
 
 
@@ -146,7 +148,7 @@ text(1.41,-1.02, 'a', 'fontsize', 18, 'fontweight', 'bold')
 
 
 
-
+%%
 % ===========
 % PLOT HEAT
 % ===========

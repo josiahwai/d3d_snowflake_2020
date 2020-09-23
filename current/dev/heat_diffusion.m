@@ -43,7 +43,7 @@ end
 thetaB = zeros(n,1);
 for i = 1:n
     thetaB(i) = calcBField_IncidenceAngle(rdiv(i), zdiv(i), eq.psizr, ...
-      eq.rg, eq.zg, eq.bzero, eq.rzero, limdata);        
+      eq.rg, eq.zg, bzero, rzero, limdata);        
 end
 
 qperp = qpar.*sin(mean(thetaB));   

@@ -31,7 +31,10 @@ tokdata = 'd3d_obj_mks_struct_6565.mat';
 load([tokdir tokdata]);
 
 % Use efit as an initial eq
-eqdir = [root 'inputs/eqs/efit01/' num2str(shot)];
+% eqdir = [root 'inputs/eqs/efit01/' num2str(shot)];
+eqdir = ['/p/omfit/users/jwai/projects/snowflake_efits/EFITtime/OUTPUTS/' ...
+  num2str(shot) '/gEQDSK/'];
+
 timerange = [time_ms+5 time_ms-5]/1000;
 init = read_eq(shot, timerange, eqdir);
 init = init.gdata;

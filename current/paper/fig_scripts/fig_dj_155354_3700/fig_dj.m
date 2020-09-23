@@ -1,5 +1,5 @@
 % Compare edge current
-load('/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfm/155354_sfm/3694/eqs.mat')
+load('/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfp/155354_sfp/3561/eqs.mat')
 
 % load and interpolate
 psin = eqs{2}.psibar;
@@ -24,7 +24,7 @@ set(gca,'gridAlpha',0.2)
 xlabel('Normalized Flux \psi_N')
 ylabel('J_{||} [MA/m^2]')
 
-text(0.73, 0.08, '155354: 3700', 'units', 'normalized', 'fontsize', 10)
+text(0.73, 0.08, '155354: 3560', 'units', 'normalized', 'fontsize', 10)
 ylim([-0.2 1])
 
 title('Current Density') 

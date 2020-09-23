@@ -1,4 +1,4 @@
-function xp1 = estimate_xpts_sfm(eq0, ef, sim0, plotit)
+function xp1 = estimate_xpts_sfm(eq0, ef, plotit)
 
 c_relaxP = 0.8;
 c_relaxS = 0.3;  % relaxation constant on the step sizes
@@ -117,8 +117,9 @@ end
 u = [dpsidr dpsidz]' / norm([dpsidr dpsidz]);
 
 v_sp = [ef.rsp(3) - rSPS(end); ef.zsp(3) - zSPS(end)]; % strike point mismatch
-v_hp = [sim0.r_qirmax(3) - sim0.r_qmax(3); sim0.z_qirmax(3) - sim0.z_qmax(3)]; % heat peak mismatch
-v = (v_sp + v_hp) / 2;
+% v_hp = [sim0.r_qirmax(3) - sim0.r_qmax(3); sim0.z_qirmax(3) - sim0.z_qmax(3)]; % heat peak mismatch
+% v = (v_sp + v_hp) / 2;
+v = v_sp;
 
 r1 = u*u'*v;  % orthogonal projection of error at strike pt
 
@@ -158,8 +159,12 @@ if plotit
   figure(800)
   plot_eq(eq0,800)
   axis([1 1.5 -1.4 -.9])
-  scatter(rxP1,zxP1,'b','filled')
-  scatter(rxS1,zxS1,'b','filled')
+  scatter(rxP0,zxP0,'b','filled')
+  scatter(rxS0,zxS0,'b','filled')
+  
+  scatter(rxP1,zxP1,'r','filled')
+  scatter(rxS1,zxS1,'r','filled')
+  
 end
 
 xp1 = [rxP1 rxS1 zxP1 zxS1];

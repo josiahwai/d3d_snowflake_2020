@@ -16,6 +16,7 @@
 function eichfit = eich_fitter(s, qperp, eq, ...
   tok_data_struct, plotit)
 
+if size(s,2) ~= 1, s = s'; end
 if ~exist('plotit','var'), plotit = 0; end
 if isfield(eq,'gdata'), eq = eq.gdata; end
 
@@ -31,22 +32,31 @@ eichfun_o = @(q0, S, lambdaQ, fExp, s0, qBg, x) (q0/2)*exp((S/(2*lambdaQ*fExp))^
 snow = analyzeSnowflake(eq);
 [fexpi,fexpo] = unpack(calc_fluxexp(eq, snow.rSPP([1 end]), snow.zSPP([1 end])));
     
-
-% index of heat flux regions (inner, outer, middle)
-if size(s,2) ~= 1, s = s'; end
-ii = find(s<120);
-io = find(s>145);
-ix = find(s>=120 & s<=145);
-
 % fit the outer peak to find strike pt
 % ....................................
 
-% outer region has a gap from geometry that shadows heat flux
-% remove the gap before fitting the eich profile
-iGap = find(s < 170,1,'last');
-dgap = s(iGap+1) - s(iGap);
-s_nogap = s;
-s_nogap(iGap(end)+1:end) = s_nogap(iGap(end)+1:end) - dgap;
+% outer region has a shelf from geometry that shadows heat flux
+% remove the shelf before fitting the eich profile
+rshadow = [1.34 1.45];
+zshadow = [-1.363 -1.25];
+
+limdata = tok_data_struct.limdata;
+slimtot = calcLimDistance(limdata(2,1), limdata(1,1), limdata);
+[rlim, zlim] = calcLimDistanceInv( slimtot - s/100, limdata);
+
+igap = find( rlim > rshadow(1) & rlim < rshadow(2) & zlim > zshadow(1) & ...
+  zlim < zshadow(2));
+
+s_nogap = s; 
+s_nogap(igap) = nan;
+dgap = s(igap(end)+1) - s(igap(1)-1);
+s_nogap(igap(end)+1:end) = s_nogap(igap(end)+1:end) - dgap;
+
+% index of heat flux regions (inner, outer, middle)
+ii = find(s<120);
+io = find( s>145 & ~isnan(s_nogap));
+ix = find(s>=120 & s<=145);
+
 
 ft = fittype(eichfun_o);
 options = fitoptions(ft);
@@ -57,6 +67,15 @@ options.Upper = [inf inf inf fexpo inf inf];  % lock flux expansion
 
 [fito, gofo] = fit(s_nogap(io), qperp(io), ft, options);
 sspo =  fito.s0;
+
+% figure
+% subplot(211)
+% plot(s, qperp)
+% subplot(212)
+% hold on
+% plot(s_nogap, qperp)
+% plot( s_nogap(io), fito(s_nogap(io)), 'g', 'linewidth', 1.5)
+
 
 
 % fit the middle peak, if the peak is there
@@ -86,9 +105,6 @@ sspi =  fiti.s0;
 
 % convert strike points from s to (r,z)
 ssp = [sspi sspx sspo]/100;
-
-limdata = tok_data_struct.limdata;
-slimtot = calcLimDistance(limdata(2,1), limdata(1,1), limdata);
 [rsp,zsp] = calcLimDistanceInv(slimtot - ssp, limdata);
 
 
@@ -136,10 +152,7 @@ if plotit
   figure(19)
   clf
   hold on
-  plot( s, qperp,'.k')
-%   plot(s, fiti(s),'r','linewidth', 1.5)
-%   plot(s, fito(s), 'g', 'linewidth', 1.5)
-  
+  plot( s_nogap, qperp,'.k')  
   plot( s_nogap(ii), fiti(s_nogap(ii)), 'r', 'linewidth', 1.5)
   plot( s_nogap(io), fito(s_nogap(io)), 'g', 'linewidth', 1.5)
   

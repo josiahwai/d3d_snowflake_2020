@@ -63,7 +63,7 @@ sfp = 0;
 if isnan(ef.ssp(2)), sfp = 1; end
 sfm = ~sfp;
 
-%%
+
 for k = 2:N
   fprintf(['\nIteration ' num2str(k) ' of ' num2str(N)])
   

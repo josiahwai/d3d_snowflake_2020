@@ -7,7 +7,7 @@ load('/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_sfm_predict/3860/
 % load('/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_sfm_predict/155354_3727/eqs.mat')
 % eqs{1} = eqs{1}.gdata;
 
-saveit = 1;
+saveit = 0;
 shot = 155354;
 
 close all

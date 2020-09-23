@@ -1,11 +1,12 @@
+ccc
 % ========
 % SETTINGS
 % ========
-shot = 155354;
-time_ms = 3727;
+shot = 155348;
+time_ms = 3760;
 saveit = 0;
-simdir = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/155354_3727/';
-% simdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/155328_sfp/2830/';
+% simdir = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/155354_3727_large_lambdaq/';
+% simdir = '/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/155354_3727/';
 plot_efit = 0;
 
 % Load stuff
@@ -22,22 +23,6 @@ load([simdir 'sims.mat'])
 % colors
 blue = [20 108 191]/255;
 orange = [198 68 26]/255;
-
-% % Define plot axes
-% figure(10)
-% spc = .07;
-% h1 = 0.4;
-% h2 = 0.18;
-% h3 = 1 - h1 - h2 - spc*4;
-% 
-% ax1 = axes('Position', [0.16 1.02-h1-spc   0.8   h1]); 
-% ax2 = axes('Position', [0.16 1.9*spc+h3   0.8   h2]); 
-% ax3 = axes('Position', [0.16 1.1*spc        0.8   h3]); 
-% 
-% set(gcf, 'position', [585 -111 453 811])
-% box(ax1,'on')
-% box(ax2,'on')
-% box(ax3,'on')
 
 % Define plot axes
 figure(10)
@@ -144,7 +129,6 @@ for i = 1:length(xps_dum), xps(i,:) = xps_dum{i}; end
 
 plot(xps(:,1), xps(:,3),'k','linewidth',1.5);
 plot(xps(:,2), xps(:,4),'k','linewidth',1.5);
-
 
 
 % plot efit x-pts

@@ -2,7 +2,7 @@
 % SETTINGS
 % ========
 clear
-saveit = 0;
+saveit = 1;
 
 blue = [20 108 191]/255;
 orange = [198 68 26]/255;
@@ -50,7 +50,7 @@ title('Edge Current Regression', 'fontsize', 12)
 % xlabel('\Delta j_{true} [MA]', 'fontsize', 12)
 ylabel('\Delta j_{predict} [MA]', 'fontsize', 12)
 
-text( 0.35, 0.13, ['Snow Minus: R^2=' num2str(floor(explained_variance*100)/100)],...
+text( 0.42, 0.13, ['Snow Minus: R^2=' num2str(floor(explained_variance*100)/100)],...
   'units', 'normalized', 'color', blue, 'fontweight', 'bold')
 
 
@@ -93,13 +93,13 @@ ylabel('\Delta j_{predict} [MA/m^2]', 'fontsize', 12)
 ymax = 0.7;
 ymin = -0.4;
 plot( ymax*[-1 1], ymax*[-1 1], '--k', 'linewidth', 0.75)
-axis( 1.05*[ymin ymax ymin ymax])
+% axis( 1.05*[ymin ymax ymin ymax])
+axis( [-0.46    0.66   -0.46    0.66])
 
-
-text( 0.35, 0.07, ['Snow Plus:    R^2=' num2str(floor(explained_variance*100)/100)],...
+text( 0.42, 0.07, ['Snow Plus:   R^2=' num2str(floor(explained_variance*100)/100)],...
   'units', 'normalized', 'color', orange, 'fontweight', 'bold')
 
-set(gcf,'position',[684 417 400 359])
+set(gcf,'position',[684 417 400 400])
 
 box on
 
@@ -108,6 +108,8 @@ if saveit
   savedir = '/u/jwai/d3d_snowflake_2020/current/paper/analysis/';
   fn = [savedir 'fig_regress.eps'];
   saveas(gcf, fn, 'epsc')
+  
+  saveas(gcf, [savedir 'fig_regress.png'], 'png')
 end
 
 

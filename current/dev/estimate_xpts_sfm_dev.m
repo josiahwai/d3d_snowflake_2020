@@ -1,6 +1,6 @@
 function xp1 = estimate_xpts_sfm(eq0, ef, plotit)
 
-c_relaxP = 0.8;
+c_relaxP = 0.3;
 c_relaxS = 0.3;  % relaxation constant on the step sizes
 thresh = .005;   % don't relax step sizes if under .5 cm
 
@@ -68,7 +68,7 @@ dxpP = dxpP1 + dxpP2;
 % find psixS by determining how heat flux divides between SP2 and SP3
 [rmid,k] = max(rbbbs);
 zmid = zbbbs(k);
-lambda_q = .006; % sol width
+lambda_q = .0032; % sol width
 
 % heat flux at r > rsplit_ir at midplane goes to outer peak, otherwise
 % middle peak

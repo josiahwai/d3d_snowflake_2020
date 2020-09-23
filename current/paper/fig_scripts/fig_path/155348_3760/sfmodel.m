@@ -6,20 +6,12 @@ addpath(genpath(root));
 dum = load('args');
 [shot,time_ms,constrain_sp] = unpack(dum.args);
 
-% lambdaq_i = .0063;
-% lambdaq_o = .0023;
-% chi_i = .1;
-% chi_o = .03;
-
-
-% snowplus
-lambdaq_i = .0073;  % sol power lengths [m]
-lambdaq_x = .0023;
-lambdaq_o = .0023; 
-Di = 0.3;          % Diffusion coeffs [m^2/s]f
-Dx = 0.3;
-Do = 0.3;
-
+lambdaq_i = .008;  % sol power lengths [m]
+lambdaq_x = .003;
+lambdaq_o = .003; 
+Di = 0.6;          % Diffusion coeffs [m^2/s]
+Dx = 0.1;
+Do = 0.1;
 
 % =========================
 % LOAD AND SIMULATE EFIT EQS
@@ -31,7 +23,8 @@ efit_dir = ['/p/omfit/users/jwai/projects/snowflake_efits/EFITtime/OUTPUTS/' ...
 
 % simulate the efit01
 efit_eq1 = read_eq(shot, time_ms/1000, efit_dir);
-efit_sim1 = heatsim_fit(efit_eq1.gdata, shot, time_ms, lambdaq_i, lambdaq_o, chi_i, chi_o);
+efit_sim1 = heatsim_fit(efit_eq1.gdata, shot, time_ms, lambdaq_i, lambdaq_x, lambdaq_o, ...
+  Di, Dx, Do);
 efit_snow1 = analyzeSnowflake(efit_eq1);
 efit_xp1 = [efit_snow1.rx efit_snow1.zx];
 xp0 = efit_xp1;
@@ -40,7 +33,8 @@ xp0 = efit_xp1;
 clear iter init spec config gsdesign 
 efit_xp2 = efit_xp1;
 efit_eq2 = designeq_ml(efit_xp2,shot,time_ms);
-efit_sim2 = heatsim_fit(efit_eq2, shot, time_ms, lambdaq_i, lambdaq_o, chi_i, chi_o);
+efit_sim2 = heatsim_fit(efit_eq2, shot, time_ms, lambdaq_i, lambdaq_x, lambdaq_o, ...
+  Di, Dx, Do);
 efit_eq2 = rmfield(efit_eq2, {'r', 'b', 'p'});
 
 % ============================
@@ -100,15 +94,16 @@ for k = 2:N
     break
   end
   
-  sims{k+1} = heatsim_fit(eqs{k+1}, shot, time_ms, lambdaq_i, lambdaq_o, chi_i, chi_o);
- 
-  % clear memory
+    % clear memory
   eqs{k+1} = rmfield(eqs{k+1}, {'r', 'b', 'p'});
 end
 
+sims{3} = heatsim_fit(eqs{end}, shot, time_ms, lambdaq_i, lambdaq_x, lambdaq_o, ...
+  Di, Dx, Do);
+
 eqs(3:end-1) = [];
-xps(3:end-1) = [];
-sims(3:end-1) = [];
+% xps(3:end-1) = [];
+% sims(3:end-1) = [];
 
 save('xps','xps')
 save('sims','sims')
