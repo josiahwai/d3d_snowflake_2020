@@ -7,10 +7,10 @@ if isfield(eq,'gdata')
     eq = eq.gdata;
 end
 
-root = '/u/jwai/d3d_snowflake_2020/current/';
-tokdir = [root 'inputs/tok_data/'];
+% root = '/u/jwai/d3d_snowflake_2020/current/';
+% tokdir = [root 'inputs/tok_data/'];
 tokdata = 'd3d_obj_mks_struct_129129.mat';
-load([tokdir tokdata]);
+load(tokdata);
 
 limdata = tok_data_struct.limdata;
 psizr = eq.psizr;

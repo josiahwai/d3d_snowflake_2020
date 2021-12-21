@@ -506,11 +506,6 @@ qir = qperp(k,:)'/100;
 s = s/100;
 
 % Remove the gap from s (distance along limiter)
-iGap = find(s < 1.70,1,'last');
-dgap = s(iGap+1) - s(iGap);
-
-% s(iGap(end)+1:end) = s(iGap(end)+1:end) - dgap;
-
 
 % ------------------
 % ANALYSIS OF PEAKS

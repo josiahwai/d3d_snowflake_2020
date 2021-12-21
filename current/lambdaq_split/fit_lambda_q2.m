@@ -32,21 +32,22 @@ params_fit = lsqcurvefit(@power_eqn, param0, f, drsplit);
 [lambdaq_fit, shift_fit] = unpack(params_fit)
 mean(lambdaq_o)
 
-% lambdaq_fit = .0061
+% lambdaq_fit = .006
 
 % plot fit
 r = -.005:.0001:.005;
 f_fit = exp(- (r + shift_fit) ./ lambdaq_fit);
 f_fit(f_fit > 1) = 1;
 
-scatter(drsplit0, f0, 'r');
+scatter(drsplit0*1000, f0, 'r');
 hold on
-scatter(drsplit, f, 'b');
-plot(r, f_fit, 'linewidth', 2)
-% axis([-1e-3 5e-3 0 1])
-axis([-0.005    0.0048   -0.0176    1.1762])
+scatter(drsplit*1000, f, 'b');
+plot(r*1000, f_fit, 'linewidth', 2)
+axis([-3.8652    6.6064         0    1.1000])
 ylabel('P4 / (P4 + P2)')
 xlabel('Midplane Separatrix Separation [mm]')
+set(gcf, 'position', [621 53 484 379])
+
 
 % POWER EQUATION
 function drsplit = power_eqn(params, f) 

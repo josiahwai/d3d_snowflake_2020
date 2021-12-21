@@ -1,4 +1,6 @@
+% topdir = '/u/jwai/d3d_snowflake_2020/current/inputs/eqs/cakes_early_t/';
 topdir = '/u/jwai/d3d_snowflake_2020/current/inputs/eqs/cakes_early_t/';
+
 
 d = dir(topdir);
 d(1:2) = [];

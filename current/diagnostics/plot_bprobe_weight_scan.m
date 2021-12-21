@@ -2,20 +2,34 @@ clear; clc; close all
 
 wts = logspace(1,4.7,100);
 
+
+% UNCOMMENT FOR 155354:3727
 load('bprobe_weight_scan_data.mat')
+load('/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfm_large_lambdaq/155354_sfm/3727/xps.mat')
+load('/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfm_large_lambdaq/155354_sfm/3727/eqs.mat')
+% from eich_fit to 155354:3727
+ef.rsp = [1.0160 1.0908 1.2742];
+ef.zsp = [-1.0758 -1.2995 -1.3630];
+
+% UNCOMMENT FOR 155350:3893
+% load('bprobe_weight_scan_data155350.mat')
+% load('/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/155350_3893/xps.mat')
+% load('/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_path/155350_3893/eqs.mat')
+% ef.rsp = [1.0160    1.0862    1.2363];
+% ef.zsp = [-1.0637   -1.2947   -1.3630];
+
+
 neqs = length(bprobe_weight_scan_data);
 wts  = wts(1:neqs);
 
 % xp targets
 rx0 = [1.2235    1.1560];
 zx0 = [-1.1746   -1.3229];
-load('/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfm_large_lambdaq/155354_sfm/3727/xps.mat')
 xpf = xps{end};
 rxf =xpf(1:2);
 zxf = xpf(3:4);
 
 % psi targets
-load('/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfm_large_lambdaq/155354_sfm/3727/eqs.mat')
 snow_tf = analyzeSnowflake(eqs{end});
 snow_t0 = analyzeSnowflake(eqs{1});
 
@@ -26,11 +40,6 @@ dpsi_tf = psixPL_tf - psixSL_tf;
 psixPL_t0 = snow_t0.psixPL;
 psixSL_t0 = snow_t0.psixSL;
 dpsi_t0 = psixPL_t0 - psixSL_t0;
-
-
-% from eich_fit to 155354:3727
-ef.rsp = [1.0160 1.0908 1.2742];
-ef.zsp = [-1.0758 -1.2995 -1.3630];
 
 % LOAD DATA
       

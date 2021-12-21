@@ -1,4 +1,4 @@
-function plotsim(sim)
+function sim = plotsim(sim)
 
 figure(27)
 hold on
@@ -51,6 +51,15 @@ plot(s, qN, 'linewidth', 1.5)
 
 axis([0.8 1.8 0 1.05* max( max(qirN), nanmax(qN))])
 set(gcf,'position', [718 -93 535 190])
+
+
+sim.qirN = qirN;
+sim.qIN = qIN;
+sim.qON = qON;
+sim.qXN = qXN;
+sim.qN = qN;
+sim.s = s;
+
 
 
 

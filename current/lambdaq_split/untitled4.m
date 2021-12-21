@@ -1,9 +1,7 @@
 
 ccc
-% shotlist = [155328:2:155354 155331];
-% shotlist = [155330 155331 155332 155334 155336 155338 155340]; 
-% shotlist = [155330 155331 155332 155340]; 
-shotlist = [155328:155334 155340];
+shotlist = [ 155328 155329 155330 155331 155332 155340 ];
+
 
 P2_all = [];
 P4_all = [];
@@ -33,5 +31,5 @@ sim.lambdaq_i = lambdaqi_all;
 savedir = '/u/jwai/d3d_snowflake_2020/current/lambdaq_split/';
 save([savedir 'sim_all'], 'sim');
   
-  
+fit_lambda_q
   

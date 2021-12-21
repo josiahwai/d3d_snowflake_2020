@@ -71,8 +71,8 @@ bprobe_weight_scan_data = struct('eqs',eqs,'Bps',Bps,'chisq',chisq,...
   'ssq',ssq,'snows',snows, 'wts', wts);
 
 
-fn = ['/u/jwai/d3d_snowflake_2020/current/diagnostics/bprobe_weight_scan_data.mat/' ...
-  num2str(shot)];
+fn = ['/u/jwai/d3d_snowflake_2020/current/diagnostics/bprobe_weight_scan_data'...
+  num2str(shot) '.mat'];
 save(fn, 'bprobe_weight_scan_data')
 
 

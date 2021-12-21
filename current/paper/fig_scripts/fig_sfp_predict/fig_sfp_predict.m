@@ -1,6 +1,6 @@
 load('/u/jwai/d3d_snowflake_2020/current/paper/fig_scripts/fig_sfp_predict/155328_2099/eqs.mat')
 
-saveit = 1;
+saveit = 0;
 shot = 155328;
 
 

@@ -14,13 +14,14 @@ saveit = 1;
 % expect_snowplus = 1;
 
 sfdir = '/u/jwai/d3d_snowflake_2020/current/sfmodel/jobs/sfm_large_lambdaq/';
-save_fn = 'strike_sfm_large_lambdaq.mat';
+save_fn = 'strike_sfm_lambdaq2.mat';
 expect_snowplus = 0;
 
 
 % ====================
 % FIND STRIKE PT DIFFS
 % ====================
+root = '/u/jwai/d3d_snowflake_2020/current/';
 load('d3d_obj_mks_struct_6565.mat')
 warning('off', 'all')
 
@@ -70,8 +71,14 @@ for ishot = 1:length(sfmdir_info)
         isim = isim + 1;
         isim
         
-        ef = eich_fitter( sims{1}.sir*100, sims{1}.qir, eqs{1}, tok_data_struct);
-        
+        % Load heat flux data q(s,t), s=distance along limiter, and t=time
+        qperp_dir  = [root 'inputs/qperp/'];
+        qperp_data = ['qperp_' num2str(shot) '.mat'];
+        load([qperp_dir qperp_data])  % loads q, s, and t
+        [~,k] = min(abs(t-time));
+        qperp = qperp(k,:)';
+        ef = eich_fitter_dev(s', qperp, eqs{1}, tok_data_struct);        
+               
         snow0 = ef.snow;
         dsp0 = [];
         dspf = [];
@@ -88,11 +95,11 @@ for ishot = 1:length(sfmdir_info)
           dspf(3) = norm([ef.rsp(3) - snowf.rSPS(end); ef.zsp(3) - snowf.zSPS(end)]);
           
           % power fraction
-          strike.pf_true(isim) = sims{1}.qirmaxN(3) / sum(sims{1}.qirmaxN(2:3));
-          strike.pf_0(isim) = sims{1}.qmaxN(3) / sum(sims{1}.qmaxN(2:3));
-          strike.pf_f(isim) = sims{end}.qmaxN(3) / sum(sims{end}.qmaxN(2:3));
+%           lambdaq = 0.006;
+%           [pf_0, pf_true] = measure_power_frac(eqs{1}.gdata, snow0, s, qperp, lambdaq);
+%           pf_f = measure_power_frac(eqs{end}, snowf, s, qperp, lambdaq);
           
-          % snowplus
+        % snowplus
         else
           
           dsp0(1) = norm([ef.rsp(1) - snow0.rSPP(1); ef.zsp(1) - snow0.zSPP(1)]);
